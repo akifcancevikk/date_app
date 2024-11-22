@@ -489,7 +489,7 @@ class _MainPageState extends State<MainPage> {
                           children: [
                             Text(
                               places.placeName,
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
                             ),
                             Text(
                               GlobalDateFormat.formatDate(places.visitDate),
@@ -525,7 +525,7 @@ class _MainPageState extends State<MainPage> {
                               height: 320,
                               child: places.imagePath != ""
                                   ? Image.network("${Url.imgUrl}${places.imagePath}", fit: BoxFit.cover)
-                                  : Image.network("${Url.imgUrl}bos.jpg", fit: BoxFit.cover),
+                                  : Image.network("https://mobiledocs.aktekweb.com/places/bos.jpg", fit: BoxFit.cover),
                             ),
                           ],
                       )

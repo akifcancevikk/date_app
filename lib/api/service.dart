@@ -22,6 +22,7 @@ Future<void> checkUser(BuildContext context) async {
         await prefs.setString('userName', User.userName!);
         await prefs.setString('password', User.password!);
         User.id = userData['id'].toString();
+        Login.userName = userData['name'];
         await getPlaces();
         Navigator.push(
           context,

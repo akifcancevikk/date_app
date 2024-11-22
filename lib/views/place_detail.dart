@@ -150,148 +150,154 @@ String generateUniqueFileName(String placeName, File imageFile) {
           color: Colors.white,
         ),
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          FloatingActionButton(
-            heroTag: 2,
-            onPressed: () {
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (context) {
-                  return Platform.isIOS
-                  ? CupertinoAlertDialog(
-                      title: Text("Not Ekle"),
-                      content: Material(
-                        color: Colors.transparent,
-                        child: Column(
-                          children: [
-                            TextField(
-                              onChanged: (value) {
-                                PlaceDetail.noteText = value;
-                              },
-                              controller: noteController,
-                              decoration: InputDecoration(
-                                labelText: 'Not Girin',
-                                labelStyle: TextStyle(color: Colors.grey),
-                                hintText: 'Notu giriniz',
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.grey),
+          Padding(
+            padding: const EdgeInsets.only(left: 30.0),
+            child: FloatingActionButton(
+              backgroundColor: Color.fromRGBO(200, 162, 200, 1),
+              tooltip: "Not Ekle",
+              heroTag: 2,
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (context) {
+                    return Platform.isIOS
+                    ? CupertinoAlertDialog(
+                        title: Text("Not Ekle"),
+                        content: Material(
+                          color: Colors.transparent,
+                          child: Column(
+                            children: [
+                              TextField(
+                                onChanged: (value) {
+                                  PlaceDetail.noteText = value;
+                                },
+                                controller: noteController,
+                                decoration: InputDecoration(
+                                  labelText: 'Not Girin',
+                                  labelStyle: TextStyle(color: Colors.grey),
+                                  hintText: 'Notu giriniz',
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.grey),
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.grey),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      actions: [
-                      CupertinoDialogAction(
-                        child: Text(
-                          "İptal",
-                          style: TextStyle(color: Colors.grey.shade600),
+                        actions: [
+                        CupertinoDialogAction(
+                          child: Text(
+                            "İptal",
+                            style: TextStyle(color: Colors.grey.shade600),
+                          ),
+                          onPressed: () {
+                            noteController.text = "";
+                            Navigator.pop(context);
+                          },
                         ),
-                        onPressed: () {
-                          noteController.text = "";
-                          Navigator.pop(context);
-                        },
-                      ),
-                      CupertinoDialogAction(
-                        child: Text(
-                          "Ekle",
-                          style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontWeight: FontWeight.bold),
+                        CupertinoDialogAction(
+                          child: Text(
+                            "Ekle",
+                            style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          onPressed: () async {
+                            PlaceDetail.placeId =
+                            GlobalLists.placesDetail[0].placeId;
+                            PlaceDetail.orderIndex =
+                            GlobalLists.placesDetail[0].images.length + 1;
+                            await addNote(context);
+                            noteController.text = "";
+                            Navigator.pop(context);
+                            await getPlaceDetails();
+                            setState(() {});
+                          },
                         ),
-                        onPressed: () async {
-                          PlaceDetail.placeId =
-                          GlobalLists.placesDetail[0].placeId;
-                          PlaceDetail.orderIndex =
-                          GlobalLists.placesDetail[0].images.length + 1;
-                          await addNote(context);
-                          noteController.text = "";
-                          Navigator.pop(context);
-                          await getPlaceDetails();
-                          setState(() {});
-                        },
-                      ),
-                    ],
-                  )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                            AlertDialog(
-                              backgroundColor: Colors.white,
-                              title: Text("Not Ekle"),
-                              content: Column(
-                                children: [
-                                  TextField(
-                                    onChanged: (value) {
-                                      PlaceDetail.noteText = value;
+                      ],
+                    )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                              AlertDialog(
+                                backgroundColor: Colors.white,
+                                title: Text("Not Ekle"),
+                                content: Column(
+                                  children: [
+                                    TextField(
+                                      onChanged: (value) {
+                                        PlaceDetail.noteText = value;
+                                      },
+                                      controller: noteController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Not Girin',
+                                        labelStyle: TextStyle(color: Colors.grey),
+                                        hintText: 'Notu giriniz',
+                                        enabledBorder: UnderlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        noteController.text = "";
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text(
+                                        "İptal",
+                                        style: TextStyle(color: Colors.grey),
+                                      )),
+                                  TextButton(
+                                    onPressed: () async {
+                                      PlaceDetail.placeId =
+                                      GlobalLists.placesDetail[0].placeId;
+                                      PlaceDetail.orderIndex =
+                                      GlobalLists.placesDetail[0].notes.length + 1;
+                                      await addNote(context);
+                                      noteController.text = "";
+                                      Navigator.pop(context);
+                                      await getPlaceDetails();
+                                      setState(() {});
                                     },
-                                    controller: noteController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Not Girin',
-                                      labelStyle: TextStyle(color: Colors.grey),
-                                      hintText: 'Notu giriniz',
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: UnderlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.grey),
-                                      ),
+                                    child: Text(
+                                      "Ekle",
+                                      style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
                               ),
-                              actions: [
-                                TextButton(
-                                    onPressed: () {
-                                      noteController.text = "";
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text(
-                                      "İptal",
-                                      style: TextStyle(color: Colors.grey),
-                                    )),
-                                TextButton(
-                                  onPressed: () async {
-                                    PlaceDetail.placeId =
-                                    GlobalLists.placesDetail[0].placeId;
-                                    PlaceDetail.orderIndex =
-                                    GlobalLists.placesDetail[0].notes.length + 1;
-                                    await addNote(context);
-                                    noteController.text = "";
-                                    Navigator.pop(context);
-                                    await getPlaceDetails();
-                                    setState(() {});
-                                  },
-                                  child: Text(
-                                    "Ekle",
-                                    style: TextStyle(
-                                        color: Colors.grey.shade700,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                  );
-                },
-              );
-            },
-            child: Icon(Icons.note_add_outlined),
+                            ],
+                    );
+                  },
+                );
+              },
+              child: Icon(Icons.note_add_outlined, color: Colors.white,),
+            ),
           ),
-          SizedBox(height: 5),
           FloatingActionButton(
+            backgroundColor: Color.fromRGBO(200, 162, 200, 1),
             heroTag: 1,
+            tooltip: "Resim Ekle",
             onPressed: () {
               showModalBottomSheet(
                 isScrollControlled: true,
@@ -355,7 +361,7 @@ String generateUniqueFileName(String placeName, File imageFile) {
                 },
               );
             },
-            child: Icon(Icons.add_photo_alternate_outlined),
+            child: Icon(Icons.add_photo_alternate_outlined, color: Colors.white,),
           ),
         ],
       ),
@@ -375,12 +381,13 @@ String generateUniqueFileName(String placeName, File imageFile) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        detail.notes[index],
-                        style: TextStyle(color: Colors.white),
+                        "• ${detail.notes[index]}",
+                        style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                       ),
                     );
                   },
                 ),
+                SizedBox(height: 8,),
                 SingleChildScrollView(   
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

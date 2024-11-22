@@ -27,3 +27,7 @@ class DeletePlace{
   static String? id;
   static String? placeId;
 }
+
+class Login{
+  static String? userName;
+}
