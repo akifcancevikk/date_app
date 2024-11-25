@@ -141,7 +141,7 @@ class _MainPageState extends State<MainPage> {
                                 onRatingUpdate: (rating) { 
                                   Place.placeRating = rating.toInt();
                                 }, 
-                              ), 
+                            ), 
                           ], 
                         ), 
                       ), 
@@ -237,8 +237,8 @@ class _MainPageState extends State<MainPage> {
                  },
                );
              },
-             child: Icon(Icons.add, size: 32,),
-             backgroundColor: Colors.white,
+             child: Icon(Icons.add, size: 32, color: Colors.white,),
+             backgroundColor: Color.fromRGBO(117, 0, 50, 1),
             ),
           ],
         ),
@@ -529,27 +529,57 @@ class _MainPageState extends State<MainPage> {
                               },
                             ),
                             SizedBox(height: 10),
-                            SizedBox(
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(color: Colors.white, width: 10), 
+                                  left: BorderSide(color: Colors.white, width: 10), 
+                                  right: BorderSide(color: Colors.white, width: 10),                          
+                                ),
+                              ),
                               width: 240,
                               height: 320,
-                              child: places.imagePath != ""
-                              ? CachedNetworkImage(
-                                imageUrl: "${Url.imgUrl}${places.imagePath}",
-                                fit: BoxFit.cover,
-                                 placeholder: (context, url) => Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                Icon(Icons.error, color: Colors.red),
-                              )
-                              : CachedNetworkImage(
-                                imageUrl: "https://mobiledocs.aktekweb.com/places/bos.jpg",
-                                placeholder: (context, url) => Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error, color: Colors.red),
-                              fit: BoxFit.cover,
+                              child: 
+                              Column(
+                                children: [
+                                  places.imagePath != ""
+                                  ? Expanded(
+                                    child: CachedNetworkImage(
+                                      imageUrl: "${Url.imgUrl}${places.imagePath}",
+                                      fit: BoxFit.cover,
+                                       placeholder: (context, url) => Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                      Icon(Icons.error, color: Colors.red),
+                                    ),
+                                  )
+                                  : Expanded(
+                                    child: CachedNetworkImage(
+                                      imageUrl: "https://mobiledocs.aktekweb.com/places/bos.jpg",
+                                      placeholder: (context, url) => Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error, color: Colors.red),
+                                    fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(
+                                        width: 0,
+                                        color: Colors.white
+                                      )
+                                    ),
+                                    width: double.infinity,
+                                    child: Align(
+                                      alignment: Alignment.centerLeft ,
+                                      child: Text(places.noteText, style: TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis,)),
+                                  )
+                                ],
                               )
                             ),
                           ],

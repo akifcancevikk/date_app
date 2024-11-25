@@ -93,10 +93,10 @@ Future<void> loadAssets() async {
   }
 }
 
-  String generateRandomNumber() {
-    final random = Random();
-    return (random.nextInt(9000) + 1000).toString();
-  }
+String generateRandomNumber() {
+  final random = Random();
+  return (random.nextInt(9000) + 1000).toString();
+}
 
 String generateUniqueFileName(String placeName, File imageFile) {
   String randomNumber = generateRandomNumber();
@@ -115,8 +115,8 @@ Future<String?> uploadImage(File imageFile) async {
       'POST', Uri.parse('${Url.baseUrl}uploadImage'));
 
   request.files.add(await http.MultipartFile.fromPath(
-    'file', // Form alanı adı
-    imageFile.path, // File nesnesinin path özelliğini kullanın
+    'file',
+    imageFile.path,
     filename: uniqueFileName,
   ));
 
@@ -132,32 +132,6 @@ Future<String?> uploadImage(File imageFile) async {
     return null;
   }
 }
-
-
-
-
-
-  // Future<String?> uploadImage(File imageFile) async {
-  //   final placeName = GlobalLists.placesDetail[0].placeName;
-  //   final uniqueFileName = generateUniqueFileName(placeName, imageFile);
-
-  //   var request = http.MultipartRequest(
-  //       'POST', Uri.parse('${Url.baseUrl}uploadImage'));
-
-  //   request.files.add(await http.MultipartFile.fromPath(
-  //     'file',
-  //     imageFile.path,
-  //     filename: uniqueFileName, // Dosya ismi burada kullanılıyor
-  //   ));
-
-  //   var response = await request.send();
-  //   if (response.statusCode == 200) {
-  //     return uniqueFileName;
-  //   } else {
-  //     errorMessage(context,'Resim yüklenemedi. Durum kodu: ${response.statusCode}');
-  //     return null;
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +163,7 @@ Future<String?> uploadImage(File imageFile) async {
           Padding(
             padding: const EdgeInsets.only(left: 30.0),
             child: FloatingActionButton(
-              backgroundColor: Color.fromRGBO(200, 162, 200, 1),
+              backgroundColor: Color.fromRGBO(117, 0, 50, 1),
               tooltip: "Not Ekle",
               heroTag: 2,
               onPressed: () {
@@ -328,7 +302,7 @@ Future<String?> uploadImage(File imageFile) async {
             ),
           ),
           FloatingActionButton(
-            backgroundColor: Color.fromRGBO(200, 162, 200, 1),
+            backgroundColor: Color.fromRGBO(117, 0, 50, 1),
             heroTag: 1,
             tooltip: "Resim Ekle",
             onPressed: () {
@@ -428,52 +402,51 @@ Future<String?> uploadImage(File imageFile) async {
                       final i = dataList.indexOf(preview);
                       return SizedBox(
                         width: ScreenHelper.screenWidth(context),
-                        height: ScreenHelper.screenHeightPercentage(context, 40),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              openPreviewPages(
-                                Navigator.of(context),
-                                data: dataList,
-                                index: i,
-                                indicator: kIsWeb || Platform.isMacOS ||
-                                    Platform.isWindows ||
-                                    Platform.isLinux,
-                                tipWidget: (currentIndex) {
-                                  return Align(
-                                    alignment: Alignment.topRight,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                          top: MediaQuery.of(context).padding.top + 16,
-                                          right: 32),
-                                      child: InkWell(
-                                        onTap: () {
-                                          debugPrint('tap tip $currentIndex');
-                                        },
-                                        child: Text(
-                                          '${currentIndex + 1}/${dataList.length}',
-                                          style: TextStyle(color: Colors.white.withAlpha(180)),
-                                        ),
-                                      ),
+                        height: ScreenHelper.screenHeightPercentage(context, 50),
+                        child: GestureDetector(
+                          onTap: () {
+                            openPreviewPages(
+                              Navigator.of(context),
+                              data: dataList,
+                              index: i,
+                              indicator: kIsWeb || Platform.isMacOS ||
+                                  Platform.isWindows ||
+                                  Platform.isLinux,
+                              tipWidget: (currentIndex) {
+                                return Align(
+                                  alignment: Alignment.topRight,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                        top: MediaQuery.of(context).padding.top + 50,
+                                        right: 32),
+                                    child: Text(
+                                      '${currentIndex + 1}/${dataList.length}',
+                                      style: TextStyle(color: Colors.white.withAlpha(180)),
                                     ),
-                                  );
-                                },
-                                onLongPressHandler: (con, url) =>
-                                    debugPrint(preview.image?.url),
-                                onPageChanged: (i) async {
-                                  debugPrint('onPageChanged $i');
-                                },
-                              );
-                            },
-                            child: CachedNetworkImage(
-                              imageUrl: preview.image?.url ?? '',
-                              placeholder: (context, url) => Center(
-                                child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(color: Colors.white, width: 10),
+                                  left: BorderSide(color: Colors.white, width: 10),
+                                  right: BorderSide(color: Colors.white, width: 10),
+                                  bottom: BorderSide(color: Colors.white, width: 50),
+                                ),
                               ),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error, color: Colors.red),
-                              fit: BoxFit.cover,
+                              child: CachedNetworkImage(
+                                imageUrl: preview.image?.url ?? '',
+                                placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                errorWidget: (context, url, error) => Icon(Icons.error, color: Colors.red),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
