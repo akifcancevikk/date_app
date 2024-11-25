@@ -51,9 +51,9 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(flex: 1, child: Align(alignment: Alignment.bottomLeft, child: Text("Giriş Yapmanız\nGerekmekte!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
+              Expanded(flex: 3, child: Align(alignment: Alignment.bottomLeft, child: Text("Giriş Yapmanız\nGerekmekte!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
               Expanded(
-                flex: 3,
+                flex: 10,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -36,9 +36,9 @@ class _RegisterState extends State<Register> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(flex: 1, child: Align(alignment: Alignment.bottomLeft, child: Text("Kayıt Olmak İçin Bilgilerinizi Giriniz!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
+              Expanded(flex: 2, child: Align(alignment: Alignment.bottomLeft, child: Text("Kayıt Olmak İçin Bilgilerinizi Giriniz!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
               Expanded(
-                flex: 3,
+                flex: 10,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -386,10 +386,29 @@ Future<String?> uploadImage(File imageFile) async {
                   itemCount: detail.notes.length,
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        "• ${detail.notes[index]}",
-                        style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.fromLTRB(8,8,16,8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "• ",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              detail.notes[index],
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -402,7 +421,7 @@ Future<String?> uploadImage(File imageFile) async {
                       final i = dataList.indexOf(preview);
                       return SizedBox(
                         width: ScreenHelper.screenWidth(context),
-                        height: ScreenHelper.screenHeightPercentage(context, 50),
+                        height: ScreenHelper.screenHeightPercentage(context, 60),
                         child: GestureDetector(
                           onTap: () {
                             openPreviewPages(
