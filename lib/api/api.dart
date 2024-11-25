@@ -10,6 +10,12 @@ class Api {
       return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);
   }
 
+  static Future<http.Response> register(String userName, String password) async {
+    var url = "${Url.baseUrl}register";
+    String body = json.encode({'UserName': userName, 'Password': password});
+      return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);
+  }
+
   static Future<http.Response> getPlaces(String userId) async {
     var url = "${Url.baseUrl}getPlaces";
     String body = json.encode({'UserId': userId});

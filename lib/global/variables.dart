@@ -31,3 +31,8 @@ class DeletePlace{
 class Login{
   static String? userName;
 }
+
+class RegisterUser{
+  static String? userName;
+  static String? password;
+}

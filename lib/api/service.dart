@@ -45,6 +45,27 @@ Future<void> checkUser(BuildContext context) async {
   }
 }
 
+Future<void> register(BuildContext context) async {
+  try {
+    var response = await Api.register(RegisterUser.userName!, RegisterUser.password!);
+    if (response.statusCode == 200) {
+      var userData = json.decode(response.body);
+      if (userData['status'] == 0) {
+        User.userName = RegisterUser.userName;
+        User.password = RegisterUser.password;
+        await checkUser(context);
+      } else {
+        errorMessage(context, "${userData['message']}");
+      }
+    } else {
+      errorMessage(context, 'Böyle bir kullanıcı kayıtlı. Farklı bir ad deneyin');
+    }
+  } catch (error) {
+      errorMessage(context, "$error");
+
+  }
+}
+
 Future<void> getPlaces() async {
   var userId = User.id;
   await Api.getPlaces(userId!).then((response) {
