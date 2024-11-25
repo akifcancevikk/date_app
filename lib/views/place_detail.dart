@@ -106,27 +106,58 @@ String generateUniqueFileName(String placeName, File imageFile) {
 }
 
 
-  Future<String?> uploadImage(File imageFile) async {
-    final placeName = GlobalLists.placesDetail[0].placeName;
-    final uniqueFileName = generateUniqueFileName(placeName, imageFile);
+Future<String?> uploadImage(File imageFile) async {
+  final placeName = GlobalLists.placesDetail[0].placeName;
+  final userName = GlobalLists.placesDetail[0].userName;
+  final uniqueFileName = generateUniqueFileName(placeName, imageFile);
 
-    var request = http.MultipartRequest(
-        'POST', Uri.parse('${Url.baseUrl}uploadImage'));
+  var request = http.MultipartRequest(
+      'POST', Uri.parse('${Url.baseUrl}uploadImage'));
 
-    request.files.add(await http.MultipartFile.fromPath(
-      'file',
-      imageFile.path,
-      filename: uniqueFileName, // Dosya ismi burada kullanılıyor
-    ));
+  request.files.add(await http.MultipartFile.fromPath(
+    'file', // Form alanı adı
+    imageFile.path, // File nesnesinin path özelliğini kullanın
+    filename: uniqueFileName,
+  ));
 
-    var response = await request.send();
-    if (response.statusCode == 200) {
-      return uniqueFileName;
-    } else {
-      errorMessage(context,'Resim yüklenemedi. Durum kodu: ${response.statusCode}');
-      return null;
-    }
+  request.fields['UserName'] = userName;
+
+  var response = await request.send();
+  if (response.statusCode == 200) {
+    return uniqueFileName;
+  } else {
+    final responseBody = await response.stream.bytesToString();
+    debugPrint('Resim yüklenemedi. Durum kodu: ${response.statusCode}');
+    debugPrint('Hata detayları: $responseBody');
+    return null;
   }
+}
+
+
+
+
+
+  // Future<String?> uploadImage(File imageFile) async {
+  //   final placeName = GlobalLists.placesDetail[0].placeName;
+  //   final uniqueFileName = generateUniqueFileName(placeName, imageFile);
+
+  //   var request = http.MultipartRequest(
+  //       'POST', Uri.parse('${Url.baseUrl}uploadImage'));
+
+  //   request.files.add(await http.MultipartFile.fromPath(
+  //     'file',
+  //     imageFile.path,
+  //     filename: uniqueFileName, // Dosya ismi burada kullanılıyor
+  //   ));
+
+  //   var response = await request.send();
+  //   if (response.statusCode == 200) {
+  //     return uniqueFileName;
+  //   } else {
+  //     errorMessage(context,'Resim yüklenemedi. Durum kodu: ${response.statusCode}');
+  //     return null;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -397,50 +428,53 @@ String generateUniqueFileName(String placeName, File imageFile) {
                       final i = dataList.indexOf(preview);
                       return SizedBox(
                         width: ScreenHelper.screenWidth(context),
-                        height: 240,
-                        child: GestureDetector(
-                          onTap: () {
-                            openPreviewPages(
-                              Navigator.of(context),
-                              data: dataList,
-                              index: i,
-                              indicator: kIsWeb || Platform.isMacOS ||
-                                  Platform.isWindows ||
-                                  Platform.isLinux,
-                              tipWidget: (currentIndex) {
-                                return Align(
-                                  alignment: Alignment.topRight,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                        top: MediaQuery.of(context).padding.top + 16,
-                                        right: 32),
-                                    child: InkWell(
-                                      onTap: () {
-                                        debugPrint('tap tip $currentIndex');
-                                      },
-                                      child: Text(
-                                        '${currentIndex + 1}/${dataList.length}',
-                                        style: TextStyle(color: Colors.white.withAlpha(180)),
+                        height: ScreenHelper.screenHeightPercentage(context, 40),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 20.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              openPreviewPages(
+                                Navigator.of(context),
+                                data: dataList,
+                                index: i,
+                                indicator: kIsWeb || Platform.isMacOS ||
+                                    Platform.isWindows ||
+                                    Platform.isLinux,
+                                tipWidget: (currentIndex) {
+                                  return Align(
+                                    alignment: Alignment.topRight,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                          top: MediaQuery.of(context).padding.top + 16,
+                                          right: 32),
+                                      child: InkWell(
+                                        onTap: () {
+                                          debugPrint('tap tip $currentIndex');
+                                        },
+                                        child: Text(
+                                          '${currentIndex + 1}/${dataList.length}',
+                                          style: TextStyle(color: Colors.white.withAlpha(180)),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                              onLongPressHandler: (con, url) =>
-                                  debugPrint(preview.image?.url),
-                              onPageChanged: (i) async {
-                                debugPrint('onPageChanged $i');
-                              },
-                            );
-                          },
-                          child: CachedNetworkImage(
-                            imageUrl: preview.image?.url ?? '',
-                            placeholder: (context, url) => Center(
-                              child: CircularProgressIndicator(),
+                                  );
+                                },
+                                onLongPressHandler: (con, url) =>
+                                    debugPrint(preview.image?.url),
+                                onPageChanged: (i) async {
+                                  debugPrint('onPageChanged $i');
+                                },
+                              );
+                            },
+                            child: CachedNetworkImage(
+                              imageUrl: preview.image?.url ?? '',
+                              placeholder: (context, url) => Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error, color: Colors.red),
+                              fit: BoxFit.cover,
                             ),
-                            errorWidget: (context, url, error) =>
-                                Icon(Icons.error, color: Colors.red),
-                            fit: BoxFit.cover,
                           ),
                         ),
                       );
