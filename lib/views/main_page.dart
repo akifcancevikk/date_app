@@ -544,9 +544,12 @@ class _MainPageState extends State<MainPage> {
                               )
                               : CachedNetworkImage(
                                 imageUrl: "https://mobiledocs.aktekweb.com/places/bos.jpg",
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => CircularProgressIndicator(),
-                                errorWidget: (context, url, error) => Icon(Icons.error),
+                                placeholder: (context, url) => Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error, color: Colors.red),
+                              fit: BoxFit.cover,
                               )
                             ),
                           ],
