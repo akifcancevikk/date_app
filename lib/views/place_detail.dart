@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:date_app/api/service.dart';
 import 'package:date_app/global/lists.dart';
 import 'package:date_app/global/variables.dart';
@@ -17,6 +18,7 @@ import 'package:image_preview/preview.dart';
 import 'package:image_preview/preview_data.dart';
 import 'package:path_provider/path_provider.dart';
 
+
 class PlaceDetailPage extends StatefulWidget {
   const PlaceDetailPage({super.key});
 
@@ -30,46 +32,46 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
   List<File> imageFiles = [];
   final List<PreviewData> dataList = [];
 
-@override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-    try {
-      String path = '';
-      if (!kIsWeb) {
-        if (Platform.isAndroid) {
-          path = ((await getExternalCacheDirectories())?[0].path ?? '');
-        } else {
-          path = (await getTemporaryDirectory()).path;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      try {
+        String path = '';
+        if (!kIsWeb) {
+          if (Platform.isAndroid) {
+            path = ((await getExternalCacheDirectories())?[0].path ?? '');
+          } else {
+            path = (await getTemporaryDirectory()).path;
+          }
         }
+
+        final temp = GlobalLists.placesDetail[0].images.asMap().entries.map((entry) {
+          final index = entry.key;
+          final imageUrl = '${Url.imgUrl}${Uri.encodeComponent(entry.value)}';
+          final fileName = Uri.parse(imageUrl).pathSegments.last;
+          final localPath = '$path/$fileName';
+
+          return PreviewData(
+            type: Type.image,
+            heroTag: index.toString(),
+            image: ImageData(
+              url: imageUrl,
+              path: localPath,
+              thumbnailUrl: imageUrl,
+              thumbnailPath: localPath,
+            ),
+          );
+        }).toList();
+
+        setState(() {
+          dataList.addAll(temp);
+        });
+      } catch (e) {
+        errorMessage(context, 'Error during initState: $e');
       }
-
-      final temp = GlobalLists.placesDetail[0].images.asMap().entries.map((entry) {
-        final index = entry.key;
-        final imageUrl = '${Url.imgUrl}${Uri.encodeComponent(entry.value)}';
-        final fileName = Uri.parse(imageUrl).pathSegments.last;
-        final localPath = '$path/$fileName';
-
-        return PreviewData(
-          type: Type.image,
-          heroTag: index.toString(),
-          image: ImageData(
-            url: imageUrl,
-            path: localPath,
-            thumbnailUrl: imageUrl,
-            thumbnailPath: localPath,
-          ),
-        );
-      }).toList();
-
-      setState(() {
-        dataList.addAll(temp);
-      });
-    } catch (e) {
-        errorMessage(context ,'Error during initState: $e');
-    }
-  });
-}
+    });
+  }
 
 
 Future<void> loadAssets() async {
@@ -365,7 +367,7 @@ String generateUniqueFileName(String placeName, File imageFile) {
           ),
         ],
       ),
-      body: LayoutBuilder(
+      body:  LayoutBuilder(
         builder: (context, constraints) {
           final detail = GlobalLists.placesDetail[0];
           return SingleChildScrollView(
@@ -387,57 +389,64 @@ String generateUniqueFileName(String placeName, File imageFile) {
                     );
                   },
                 ),
-                SizedBox(height: 8,),
-                SingleChildScrollView(   
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: dataList.map<Widget>((preview) {
-                    final i = dataList.indexOf(preview);
-                    return SizedBox(
-                      width: ScreenHelper.screenWidth(context),
-                      height: 240,
-                      child: PreviewThumbnail(
-                        data: dataList[i],
-                        onTap: () {
-                          openPreviewPages(
-                            Navigator.of(context),
-                            data: dataList,
-                            index: i,
-                            indicator: kIsWeb || Platform.isMacOS ||
-                                Platform.isWindows ||
-                                Platform.isLinux,
-                            tipWidget: (currentIndex) {
-                              return Align(
-                                alignment: Alignment.topRight,
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                      top: MediaQuery.of(context).padding.top + 16,
-                                      right: 32),
-                                  child: InkWell(
-                                    onTap: () {
-                                      debugPrint('tap tip $currentIndex');
-                                    },
-                                    child: Text(
-                                      '${currentIndex + 1}/${dataList.length}',
-                                      style:
-                                          TextStyle(color: Colors.white.withAlpha(180)),
+                SizedBox(height: 8),
+                SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: dataList.map<Widget>((preview) {
+                      final i = dataList.indexOf(preview);
+                      return SizedBox(
+                        width: ScreenHelper.screenWidth(context),
+                        height: 240,
+                        child: GestureDetector(
+                          onTap: () {
+                            openPreviewPages(
+                              Navigator.of(context),
+                              data: dataList,
+                              index: i,
+                              indicator: kIsWeb || Platform.isMacOS ||
+                                  Platform.isWindows ||
+                                  Platform.isLinux,
+                              tipWidget: (currentIndex) {
+                                return Align(
+                                  alignment: Alignment.topRight,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                        top: MediaQuery.of(context).padding.top + 16,
+                                        right: 32),
+                                    child: InkWell(
+                                      onTap: () {
+                                        debugPrint('tap tip $currentIndex');
+                                      },
+                                      child: Text(
+                                        '${currentIndex + 1}/${dataList.length}',
+                                        style: TextStyle(color: Colors.white.withAlpha(180)),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                            onLongPressHandler: (con, url) =>
-                                debugPrint(preview.image?.url),
-                            onPageChanged: (i) async {
-                              debugPrint('onPageChanged $i');
-                            },
-                          );
-                        },
-                      ),
-                    );
-                  }).toList(),
+                                );
+                              },
+                              onLongPressHandler: (con, url) =>
+                                  debugPrint(preview.image?.url),
+                              onPageChanged: (i) async {
+                                debugPrint('onPageChanged $i');
+                              },
+                            );
+                          },
+                          child: CachedNetworkImage(
+                            imageUrl: preview.image?.url ?? '',
+                            placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error, color: Colors.red),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),      
               ],
             ),
           );

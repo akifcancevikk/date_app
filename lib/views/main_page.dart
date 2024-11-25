@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_build_context_synchronously, sort_child_properties_last
 
 import 'dart:io';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:date_app/api/service.dart';
 import 'package:date_app/global/lists.dart';
 import 'package:date_app/global/variables.dart';
@@ -15,6 +15,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:responsive_grid_list/responsive_grid_list.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -241,19 +242,27 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-        body: ListView.builder(
+        body: 
+        GlobalLists.places[0].placeId != 0
+        ?ResponsiveGridList(
+        listViewBuilderOptions: ListViewBuilderOptions(
           physics: BouncingScrollPhysics(),
-          itemCount: GlobalLists.places.length,
-          itemBuilder: (context, index) {
-            final places = GlobalLists.places[index];
-            return  
-            places.placeId != 0
-            ?Dismissible(
-                key: ValueKey(places.placeId),
-                direction: DismissDirection.horizontal,
-                confirmDismiss: (direction) async {
-                if (direction == DismissDirection.endToStart) {
-                  return await showDialog(
+        ),
+        horizontalGridMargin: 8,
+        horizontalGridSpacing: 8,
+        verticalGridSpacing: 8,
+        verticalGridMargin: 8,
+        minItemWidth: 350,
+        children: List.generate(
+               GlobalLists.places.length,
+               (index){
+                 final places = GlobalLists.places[index];
+                 return Dismissible(
+                   key: ValueKey(places.placeId),
+                   direction: DismissDirection.horizontal,
+                   confirmDismiss: (direction) async {
+                   if (direction == DismissDirection.endToStart) {
+                     return await showDialog(
                     context: context,
                     builder: (context) => Platform.isIOS
                     ? CupertinoAlertDialog(
@@ -305,12 +314,12 @@ class _MainPageState extends State<MainPage> {
                       ],
                     ),
                   );
-                } else if (direction == DismissDirection.startToEnd) {
-                  PlaceUpdate.placeId = places.placeId.toString();
-                  PlaceUpdate.placeRating = places.rating;
-                  PlaceUpdate.placeName = places.placeName;
-                  _placeNameUpdateController.text = places.placeName;
-                  showDialog(
+                   } else if (direction == DismissDirection.startToEnd) {
+                     PlaceUpdate.placeId = places.placeId.toString();
+                     PlaceUpdate.placeRating = places.rating;
+                     PlaceUpdate.placeName = places.placeName;
+                     _placeNameUpdateController.text = places.placeName;
+                     showDialog(
                     context: context, 
                     barrierDismissible: true,
                     builder: (context) {
@@ -446,11 +455,11 @@ class _MainPageState extends State<MainPage> {
                     );
                   },
                 );     
-                  return false;
-                }
-                return false;
-              },
-              onDismissed: (direction) async {
+                     return false;
+                   }
+                   return false;
+                 },
+                 onDismissed: (direction) async {
                   if (direction == DismissDirection.endToStart) {
                     DeletePlace.id = places.userId.toString();
                     DeletePlace.placeId = places.placeId.toString();
@@ -459,19 +468,19 @@ class _MainPageState extends State<MainPage> {
                     setState(() {});
                   }
               },
-              secondaryBackground: Container(
+                 secondaryBackground: Container(
                 color: Colors.transparent,
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Icon(Icons.delete_forever_outlined, color: Colors.red, size: 34,),
               ),
-              background: Container(
-                color: Colors.transparent,
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Icon(Icons.update, color: Colors.green, size: 30,),
-              ),
-              child: GestureDetector(
+                 background: Container(
+                   color: Colors.transparent,
+                   alignment: Alignment.centerLeft,
+                   padding: EdgeInsets.symmetric(horizontal: 20),
+                   child: Icon(Icons.update, color: Colors.green, size: 30,),
+                 ),
+                 child: GestureDetector(
                   onTap: () async {
                     Place.placeId = places.placeId.toString();
                     await getPlaceDetails();
@@ -524,20 +533,38 @@ class _MainPageState extends State<MainPage> {
                               width: 240,
                               height: 320,
                               child: places.imagePath != ""
-                                  ? Image.network("${Url.imgUrl}${places.imagePath}", fit: BoxFit.cover)
-                                  : Image.network("https://mobiledocs.aktekweb.com/places/bos.jpg", fit: BoxFit.cover),
+                              ? CachedNetworkImage(
+                                imageUrl: "${Url.imgUrl}${places.imagePath}",
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => SizedBox(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Icon(Icons.error),
+                              )
+                              : CachedNetworkImage(
+                                imageUrl: "https://mobiledocs.aktekweb.com/places/bos.jpg",
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => CircularProgressIndicator(),
+                                errorWidget: (context, url, error) => Icon(Icons.error),
+                              )
                             ),
                           ],
                       )
                     ),
                   ),
               ),
-          )
-          :ListTile(
-            title: Center(child: Text("Veri Bulunamadı", style: TextStyle(color: Colors.white),)),
-          );
-        },
-       ),
+             );         
+            }
+          ),
+        )
+        :ListTile(
+          title: Align(alignment: Alignment.topCenter ,child: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Text("Veri Bulunamadı", style: TextStyle(color: Colors.white, fontSize: ScreenHelper.screenWidth(context) < 500 ?16:20),),
+          )),
+        )
       ),
     );
   }
