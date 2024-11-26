@@ -52,9 +52,9 @@ class Api {
       return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);
   }
 
-  static Future<http.Response> deletePlace(String userId, String placeId) async {
+  static Future<http.Response> deletePlace(String userId, String placeId, String userName) async {
     var url = "${Url.baseUrl}deletePlace";
-    String body = json.encode({'UserId': userId, "PlaceId": placeId});
+    String body = json.encode({'UserId': userId, "PlaceId": placeId, "UserName": userName});
       return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);
   }
 

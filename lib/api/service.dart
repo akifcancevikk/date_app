@@ -144,7 +144,8 @@ Future<void> addImagePath(BuildContext context) async {
 Future<void> deletePlace(BuildContext context) async {
   var userId = DeletePlace.id;
   var placeId = DeletePlace.placeId;
-  await Api.deletePlace(userId!, placeId!).then((response) {
+  var userName = Login.userName;
+  await Api.deletePlace(userId!, placeId!, userName!).then((response) {
     if (response.statusCode == 200) {
       successMessage(context, "Kayıt Silindi");
     }

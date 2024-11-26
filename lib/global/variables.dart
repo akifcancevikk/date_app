@@ -26,6 +26,8 @@ class PlaceDetail{
 class DeletePlace{
   static String? id;
   static String? placeId;
+  static String? imagePath;
+  static String? userName;
 }
 
 class Login{
