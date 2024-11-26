@@ -6,5 +6,5 @@ class Url {
 
 
   static String baseUrl = "https://mobiledocs.aktekweb.com/api/dateapi/";
-  static String imgUrl = "https://mobiledocs.aktekweb.com/places/${User.userName}/";
+  static String imgUrl = "https://mobiledocs.aktekweb.com/places/${Login.userName}/";
 }

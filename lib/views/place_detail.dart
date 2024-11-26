@@ -146,7 +146,8 @@ Future<String?> uploadImage(File imageFile) async {
           style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
-          onPressed: () {
+          onPressed: () async {
+            await getPlaces();
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => MainPage()),
@@ -386,7 +387,7 @@ Future<String?> uploadImage(File imageFile) async {
                   itemCount: detail.notes.length,
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: const EdgeInsets.fromLTRB(8,8,16,8),
+                      padding: const EdgeInsets.fromLTRB(8,8,16,0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
