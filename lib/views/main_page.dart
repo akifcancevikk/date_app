@@ -29,11 +29,13 @@ class _MainPageState extends State<MainPage> {
   final TextEditingController _placeNameController = TextEditingController();
   final TextEditingController _placeNameUpdateController = TextEditingController();
 
-    Future<void> logout(BuildContext context) async {
+  Future<void> logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('password');
+    Login.userName = null;
     Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(builder: (context) => LoginPage()),  (Route<dynamic> route) => false);
   }
+
   @override 
   void dispose() { 
     _placeNameController.dispose(); 

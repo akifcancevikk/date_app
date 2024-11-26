@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:date_app/api/api.dart';
 import 'package:date_app/global/lists.dart';
 import 'package:date_app/global/variables.dart';
+import 'package:date_app/helper/url_helper.dart';
 import 'package:date_app/models/place_detail.dart';
 import 'package:date_app/models/places.dart';
 import 'package:date_app/views/main_page.dart';
@@ -23,6 +24,7 @@ Future<void> checkUser(BuildContext context) async {
         await prefs.setString('password', User.password!);
         User.id = userData['id'].toString();
         Login.userName = userData['name'];
+        Url.imgUrl = "https://mobiledocs.aktekweb.com/places/${Login.userName}/"; // Burada güncelle
         await getPlaces();
         Navigator.push(
           context,
@@ -44,6 +46,7 @@ Future<void> checkUser(BuildContext context) async {
     }
   }
 }
+
 
 Future<void> register(BuildContext context) async {
   try {
