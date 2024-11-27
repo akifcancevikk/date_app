@@ -17,6 +17,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 
+
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 

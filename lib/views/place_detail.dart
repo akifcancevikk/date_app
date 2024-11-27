@@ -380,6 +380,7 @@ Future<String?> uploadImage(File imageFile) async {
             physics: BouncingScrollPhysics(),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ListView.builder(
                   shrinkWrap: true,
@@ -421,8 +422,8 @@ Future<String?> uploadImage(File imageFile) async {
                     children: dataList.map<Widget>((preview) {
                       final i = dataList.indexOf(preview);
                       return SizedBox(
-                        width: ScreenHelper.screenWidth(context),
-                        height: ScreenHelper.screenHeightPercentage(context, 60),
+                        height: ScreenHelper.screenHeightPercentage(context, 50),
+                        width: ScreenHelper.screenWidthPercentage(context, 70),
                         child: GestureDetector(
                           onTap: () {
                             openPreviewPages(

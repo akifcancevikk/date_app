@@ -49,6 +49,8 @@ dependencies:
   google_fonts: ^6.2.1
   responsive_grid_list: ^1.4.0
   cached_network_image: ^3.4.1
+  floating_action_bubble: ^1.1.4
+  flutter_tilt: ^3.1.0
   
 
 dev_dependencies:
@@ -56,11 +58,7 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.14.1  
 
-flutter_launcher_icons:
-  android: true
-  ios: true
-  remove_alpha_ios: true
-  image_path: "assets/images/el.png"
+
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
