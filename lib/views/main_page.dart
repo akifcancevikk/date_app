@@ -240,8 +240,8 @@ class _MainPageState extends State<MainPage> {
                  },
                );
              },
-             child: Icon(Icons.add, size: 32, color: Colors.white,),
-             backgroundColor: Color.fromRGBO(117, 0, 50, 1),
+             child: Icon(Icons.add, size: 32, color: Colors.black,),
+             backgroundColor: Colors.white,
             ),
           ],
         ),

@@ -164,7 +164,7 @@ Future<String?> uploadImage(File imageFile) async {
           Padding(
             padding: const EdgeInsets.only(left: 30.0),
             child: FloatingActionButton(
-              backgroundColor: Color.fromRGBO(117, 0, 50, 1),
+              backgroundColor: Colors.white,
               tooltip: "Not Ekle",
               heroTag: 2,
               onPressed: () {
@@ -299,11 +299,11 @@ Future<String?> uploadImage(File imageFile) async {
                   },
                 );
               },
-              child: Icon(Icons.note_add_outlined, color: Colors.white,),
+              child: Icon(Icons.note_add_outlined, color: Colors.black,),
             ),
           ),
           FloatingActionButton(
-            backgroundColor: Color.fromRGBO(117, 0, 50, 1),
+            backgroundColor: Colors.white,
             heroTag: 1,
             tooltip: "Resim Ekle",
             onPressed: () {
@@ -369,7 +369,7 @@ Future<String?> uploadImage(File imageFile) async {
                 },
               );
             },
-            child: Icon(Icons.add_photo_alternate_outlined, color: Colors.white,),
+            child: Icon(Icons.add_photo_alternate_outlined, color: Colors.black,),
           ),
         ],
       ),

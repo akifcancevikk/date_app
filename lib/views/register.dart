@@ -26,10 +26,10 @@ class _RegisterState extends State<Register> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        backgroundColor: Color.fromRGBO(197, 201, 205, 1),
+        backgroundColor: Colors.white,
         appBar: AppBar(
           leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context),),
-          backgroundColor: Color.fromRGBO(197, 201, 205, 1),
+          backgroundColor: Colors.white,
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -48,6 +48,7 @@ class _RegisterState extends State<Register> {
                         Text("Kullanıcı Adı", style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
+                          cursorColor: Colors.black,
                           onChanged: (value) {
                             RegisterUser.userName = value;
                           },
@@ -60,7 +61,7 @@ class _RegisterState extends State<Register> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                color: Color.fromRGBO(117, 0, 50, 1), // Tıklama durumunda kenar rengi
+                                color: Colors.black, // Tıklama durumunda kenar rengi
                                 width: 2.0,
                               ),
                               borderRadius: BorderRadius.circular(5),
@@ -83,6 +84,7 @@ class _RegisterState extends State<Register> {
                         Text("Şifre", style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
+                          cursorColor: Colors.black,
                           onChanged: (value) {
                             RegisterUser.password = value;
                           },
@@ -93,7 +95,7 @@ class _RegisterState extends State<Register> {
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
                             focusedBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                color: Color.fromRGBO(117, 0, 50, 1),
+                                color: Colors.black,
                                 width: 2.0,
                               ),
                               borderRadius: BorderRadius.circular(5),
@@ -117,6 +119,7 @@ class _RegisterState extends State<Register> {
                         Text("Şifre Tekrar", style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
+                          cursorColor: Colors.black,
                           controller: _passwordAgainController,
                           decoration: InputDecoration(
                             hintText: 'Şifrenizi tekrar girin...',
@@ -124,7 +127,7 @@ class _RegisterState extends State<Register> {
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
                             focusedBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                color: Color.fromRGBO(117, 0, 50, 1),
+                                color: Colors.black,
                                 width: 2.0,
                               ),
                               borderRadius: BorderRadius.circular(5),
@@ -158,10 +161,10 @@ class _RegisterState extends State<Register> {
                           errorMessage(context, "Beklenmedik hata");
                         }
                       },
-                      child: Text('Kayıt Ol', style: TextStyle(color: Colors.white),),
+                      child: Text('Kayıt Ol', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
                       style: ElevatedButton.styleFrom(
-                        minimumSize: Size(200, 40),
-                        backgroundColor: Color.fromRGBO(117, 0, 50, 1),
+                        minimumSize: Size(200, 50),
+                        backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5), // Burada köşe yarıçapını belirliyoruz
                         ),
@@ -178,7 +181,7 @@ class _RegisterState extends State<Register> {
                     Text("Hesabınız var mı?"),
                     GestureDetector(
                       onTap: () => Navigator.pushAndRemoveUntil(context, CupertinoPageRoute(builder: (context) => LoginPage(),), (route) => false,),
-                      child: Text(" Giriş Yapın", style: TextStyle(color: Color.fromRGBO(117, 0, 50, 1), fontWeight: FontWeight.bold),)),
+                      child: Text(" Giriş Yapın", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
                   ],
                 ),
               )

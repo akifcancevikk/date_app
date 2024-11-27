@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(197, 201, 205, 1),
+        backgroundColor: Colors.white,
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -63,14 +63,30 @@ class _LoginPageState extends State<LoginPage> {
                         Text("Kullanıcı Adı", style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
+                          
                           onChanged: (value) {
                             User.userName = value;
                           },
+                          cursorColor: Colors.black,
                           controller: _usernameController,
                           decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Colors.black,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
                             hintText: 'Kullanıcı adınızı girin...',
                             hintStyle: TextStyle(color: Colors.grey),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
                           ),
                         ),
                       ],
@@ -86,24 +102,39 @@ class _LoginPageState extends State<LoginPage> {
                             User.password = value;
                           },
                           controller: _passwordController,
+                          cursorColor: Colors.black,
                           decoration: InputDecoration(
                             hintText: 'Şifrenizi girin...',
                             hintStyle: TextStyle(color: Colors.grey),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Colors.black,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
                           ),
                           obscureText: true,
                         ),
                       ],
                     ),
-                    SizedBox(height: 40.0),
+                    SizedBox(height: 20.0),
                     ElevatedButton(
                       onPressed: () async {
                         await checkUser(context);
                       },
-                      child: Text('Giriş Yap', style: TextStyle(color: Colors.white),),
+                      child: Text('Giriş Yap', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
                       style: ElevatedButton.styleFrom(
-                        minimumSize: Size(200, 40),
-                        backgroundColor: Color.fromRGBO(117, 0, 50, 1),
+                        minimumSize: Size(200, 50),
+                        backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5), // Burada köşe yarıçapını belirliyoruz
                         ),
@@ -120,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                     Text("Hesabınız mı yok?"),
                     GestureDetector(
                       onTap: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => Register(),)),
-                      child: Text(" Kayıt olun", style: TextStyle(color: Color.fromRGBO(117, 0, 50, 1), fontWeight: FontWeight.bold),)),
+                      child: Text(" Kayıt olun", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
                   ],
                 ),
               )
