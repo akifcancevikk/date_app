@@ -189,12 +189,10 @@ Future<String?> uploadImage(File imageFile) async {
                                   labelStyle: TextStyle(color: Colors.grey),
                                   hintText: 'Notu giriniz',
                                   enabledBorder: UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: Colors.grey),
+                                    borderSide: BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: Colors.grey),
+                                    borderSide: BorderSide(color: Colors.grey),
                                   ),
                                 ),
                               ),
@@ -203,22 +201,14 @@ Future<String?> uploadImage(File imageFile) async {
                         ),
                         actions: [
                         CupertinoDialogAction(
-                          child: Text(
-                            "İptal",
-                            style: TextStyle(color: Colors.grey.shade600),
-                          ),
+                          child: Text("İptal",style: TextStyle(color: Colors.grey.shade600)),
                           onPressed: () {
                             noteController.text = "";
                             Navigator.pop(context);
                           },
                         ),
                         CupertinoDialogAction(
-                          child: Text(
-                            "Ekle",
-                            style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontWeight: FontWeight.bold),
-                          ),
+                          child: Text("Ekle", style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
                           onPressed: () async {
                             PlaceDetail.placeId =
                             GlobalLists.placesDetail[0].placeId;
@@ -237,64 +227,64 @@ Future<String?> uploadImage(File imageFile) async {
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                              AlertDialog(
-                                backgroundColor: Colors.white,
-                                title: Text("Not Ekle"),
-                                content: Column(
-                                  children: [
-                                    TextField(
-                                      onChanged: (value) {
-                                        PlaceDetail.noteText = value;
-                                      },
-                                      controller: noteController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Not Girin',
-                                        labelStyle: TextStyle(color: Colors.grey),
-                                        hintText: 'Notu giriniz',
-                                        enabledBorder: UnderlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.grey),
-                                        ),
-                                        focusedBorder: UnderlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.grey),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        noteController.text = "";
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        "İptal",
-                                        style: TextStyle(color: Colors.grey),
-                                      )),
-                                  TextButton(
-                                    onPressed: () async {
-                                      PlaceDetail.placeId =
-                                      GlobalLists.placesDetail[0].placeId;
-                                      PlaceDetail.orderIndex =
-                                      GlobalLists.placesDetail[0].notes.length + 1;
-                                      await addNote(context);
-                                      noteController.text = "";
-                                      Navigator.pop(context);
-                                      await getPlaceDetails();
-                                      setState(() {});
-                                    },
-                                    child: Text(
-                                      "Ekle",
-                                      style: TextStyle(
-                                          color: Colors.grey.shade700,
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                        AlertDialog(
+                          backgroundColor: Colors.white,
+                          title: Text("Not Ekle"),
+                          content: Column(
+                            children: [
+                              TextField(
+                                onChanged: (value) {
+                                  PlaceDetail.noteText = value;
+                                },
+                                controller: noteController,
+                                decoration: InputDecoration(
+                                  labelText: 'Not Girin',
+                                  labelStyle: TextStyle(color: Colors.grey),
+                                  hintText: 'Notu giriniz',
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.grey),
                                   ),
-                                ],
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.grey),
+                                  ),
+                                ),
                               ),
                             ],
+                          ),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  noteController.text = "";
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  "İptal",
+                                  style: TextStyle(color: Colors.grey),
+                                )),
+                            TextButton(
+                              onPressed: () async {
+                                PlaceDetail.placeId =
+                                GlobalLists.placesDetail[0].placeId;
+                                PlaceDetail.orderIndex =
+                                GlobalLists.placesDetail[0].notes.length + 1;
+                                await addNote(context);
+                                noteController.text = "";
+                                Navigator.pop(context);
+                                await getPlaceDetails();
+                                setState(() {});
+                              },
+                              child: Text(
+                                "Ekle",
+                                style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     );
                   },
                 );
@@ -438,8 +428,9 @@ Future<String?> uploadImage(File imageFile) async {
                                   alignment: Alignment.topRight,
                                   child: Padding(
                                     padding: EdgeInsets.only(
-                                        top: MediaQuery.of(context).padding.top + 50,
-                                        right: 32),
+                                      top: MediaQuery.of(context).padding.top + 50,
+                                      right: 32
+                                    ),
                                     child: Text(
                                       '${currentIndex + 1}/${dataList.length}',
                                       style: TextStyle(color: Colors.white.withAlpha(180)),

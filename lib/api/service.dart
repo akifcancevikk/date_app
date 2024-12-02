@@ -9,6 +9,7 @@ import 'package:date_app/helper/url_helper.dart';
 import 'package:date_app/models/place_detail.dart';
 import 'package:date_app/models/places.dart';
 import 'package:date_app/views/main_page.dart';
+import 'package:date_app/widgets/show_dialogs/progress_loader.dart';
 import 'package:date_app/widgets/show_dialogs/show_info.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,13 +20,15 @@ Future<void> checkUser(BuildContext context) async {
     if (response.statusCode == 200) {
       var userData = json.decode(response.body);
       if (userData['status'] == 0) {
+        progress_loader(context);
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('userName', User.userName!);
         await prefs.setString('password', User.password!);
         User.id = userData['id'].toString();
         Login.userName = userData['name'];
-        Url.imgUrl = "https://mobiledocs.aktekweb.com/places/${Login.userName}/"; // Burada güncelle
+        Url.imgUrl = "https://mobiledocs.aktekweb.com/places/${Login.userName}/";
         await getPlaces();
+        Navigator.pop(context);
         Navigator.push(
           context,
           CupertinoPageRoute(builder: (context) => MainPage()),
@@ -46,7 +49,6 @@ Future<void> checkUser(BuildContext context) async {
     }
   }
 }
-
 
 Future<void> register(BuildContext context) async {
   try {

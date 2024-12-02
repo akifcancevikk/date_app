@@ -58,5 +58,4 @@ class Api {
       return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);
   }
 
-
 }

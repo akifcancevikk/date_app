@@ -61,14 +61,14 @@ class _RegisterState extends State<Register> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                color: Colors.black, // Tıklama durumunda kenar rengi
+                                color: Colors.black,
                                 width: 2.0,
                               ),
                               borderRadius: BorderRadius.circular(5),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                color: Colors.grey, // Normal durumda kenar rengi
+                                color: Colors.grey,
                                 width: 1.0,
                               ),
                               borderRadius: BorderRadius.circular(5),
@@ -161,14 +161,14 @@ class _RegisterState extends State<Register> {
                           errorMessage(context, "Beklenmedik hata");
                         }
                       },
-                      child: Text('Kayıt Ol', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(200, 50),
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5), // Burada köşe yarıçapını belirliyoruz
+                          borderRadius: BorderRadius.circular(5),
                         ),
                       ),
+                      child: Text('Kayıt Ol', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
                     ),
                   ],
                 ),

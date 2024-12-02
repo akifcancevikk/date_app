@@ -63,7 +63,6 @@ class _LoginPageState extends State<LoginPage> {
                         Text("Kullanıcı Adı", style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
-                          
                           onChanged: (value) {
                             User.userName = value;
                           },
@@ -136,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
                         minimumSize: Size(200, 50),
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5), // Burada köşe yarıçapını belirliyoruz
+                          borderRadius: BorderRadius.circular(5),
                         ),
                       ),
                     ),
