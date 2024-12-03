@@ -24,8 +24,10 @@ Future<void> checkUser(BuildContext context) async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('userName', User.userName!);
         await prefs.setString('password', User.password!);
+        await prefs.setString('userToken', userData['token']);
         User.id = userData['id'].toString();
         Login.userName = userData['name'];
+        Login.userToken = userData['token'];
         Url.imgUrl = "https://mobiledocs.aktekweb.com/places/${Login.userName}/";
         await getPlaces();
         Navigator.pop(context);

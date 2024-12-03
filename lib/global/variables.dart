@@ -32,6 +32,7 @@ class DeletePlace{
 
 class Login{
   static String? userName;
+  static String? userToken;
 }
 
 class RegisterUser{
