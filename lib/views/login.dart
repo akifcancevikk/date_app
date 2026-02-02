@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, sort_child_properties_last, library_private_types_in_public_api
 
 import 'package:date_app/api/service.dart';
+import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/views/register.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   User.password = prefs.getString('password');
   if (!mounted) return;
   if (User.userName != null && User.password != null) {
-      await checkUser(context);     
+      await login(context);     
   } 
   else if (User.userName != null) {
     setState(() {
@@ -51,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(flex: 3, child: Align(alignment: Alignment.bottomLeft, child: Text("Giriş Yapmanız\nGerekmekte!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
+              Expanded(flex: 3, child: Align(alignment: Alignment.bottomLeft, child: Text(AppStrings.loginTitle, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
               Expanded(
                 flex: 10,
                 child: Column(
@@ -60,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Kullanıcı Adı", style: TextStyle(fontWeight: FontWeight.bold),),
+                        Text(AppStrings.username, style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
                           onChanged: (value) {
@@ -84,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            hintText: 'Kullanıcı adınızı girin...',
+                            hintText: AppStrings.username,
                             hintStyle: TextStyle(color: Colors.grey),
                           ),
                         ),
@@ -94,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Şifre", style: TextStyle(fontWeight: FontWeight.bold),),
+                        Text(AppStrings.password, style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
                           onChanged: (value) {
@@ -103,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _passwordController,
                           cursorColor: Colors.black,
                           decoration: InputDecoration(
-                            hintText: 'Şifrenizi girin...',
+                            hintText: AppStrings.password,
                             hintStyle: TextStyle(color: Colors.grey),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
                             focusedBorder: OutlineInputBorder(
@@ -128,9 +129,9 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(height: 20.0),
                     ElevatedButton(
                       onPressed: () async {
-                        await checkUser(context);
+                        await login(context);
                       },
-                      child: Text('Giriş Yap', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
+                      child: Text(AppStrings.loginButton, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(200, 50),
                         backgroundColor: Colors.black,
@@ -147,10 +148,10 @@ class _LoginPageState extends State<LoginPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Hesabınız mı yok?"),
+                    Text(AppStrings.register),
                     GestureDetector(
                       onTap: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => Register(),)),
-                      child: Text(" Kayıt olun", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
+                      child: Text(AppStrings.registerButton, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
                   ],
                 ),
               )

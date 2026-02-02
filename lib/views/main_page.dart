@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:date_app/api/service.dart';
+import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/lists.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/helper/date_format.dart';
@@ -68,31 +69,31 @@ class _MainPageState extends State<MainPage> {
                       builder: (context) {
                         return Platform.isIOS
                         ? CupertinoAlertDialog(
-                          title: Text("Çıkış Yap"),
-                          content: Text("Çıkış yapmak istediğinize emin misiniz?"),
+                          title: Text(AppStrings.exit),
+                          content: Text(AppStrings.sureExit),
                           actions: [
                             CupertinoDialogAction(
-                              child: Text("İptal", style: TextStyle(color: Colors.grey.shade600)),
+                              child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey.shade600)),
                               onPressed: () => Navigator.pop(context),
                             ),
                             CupertinoDialogAction(
-                              child: Text("Çıkış Yap", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                              child: Text(AppStrings.exit, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                               onPressed: () async => logout(context),
                             ),
                           ],
                         )
                         : AlertDialog(
                           backgroundColor: Colors.white,
-                          title: Text("Çıkış Yap"),
-                          content: Text("Çıkış yapmak istediğinize emin misiniz?"),
+                          title: Text(AppStrings.exit),
+                          content: Text(AppStrings.sureExit),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: Text("İptal", style: TextStyle(color: Colors.grey))
+                              child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey))
                             ),
                             TextButton(
                               onPressed: () async => logout(context),
-                              child: Text("Çıkış Yap", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+                              child: Text(AppStrings.exit, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
                             )
                           ],
                         );
@@ -114,7 +115,7 @@ class _MainPageState extends State<MainPage> {
                     builder: (context) {
                     return Platform.isIOS
                     ? CupertinoAlertDialog(
-                        title: Text("Yer Ekle"),
+                        title: Text(AppStrings.addPlace),
                         content: Material(
                           color: Colors.transparent,
                           child: Column(
@@ -125,9 +126,9 @@ class _MainPageState extends State<MainPage> {
                                 },
                                 controller: _placeNameController,
                                 decoration: InputDecoration(
-                                  labelText: 'Yer İsmi',
+                                  labelText: AppStrings.placeName,
                                   labelStyle: TextStyle(color: Colors.grey),
-                                  hintText: 'Yer ismini giriniz',
+                                  hintText: AppStrings.addPlaceName,
                                   enabledBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(color: Colors.grey), // Pasif durumdaki sınır rengi
                                   ),
@@ -156,14 +157,14 @@ class _MainPageState extends State<MainPage> {
                         ),
                         actions: [
                           CupertinoDialogAction(
-                            child: Text("İptal", style: TextStyle(color: Colors.grey.shade600)),
+                            child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey.shade600)),
                             onPressed: () {
                               _placeNameController.text = "";
                               Navigator.pop(context);
                             }
                           ),
                           CupertinoDialogAction(
-                            child: Text("Ekle", style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
+                            child: Text(AppStrings.add, style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
                             onPressed: () async {
                               await addPlace(context);
                               _placeNameController.text = "";
@@ -180,7 +181,7 @@ class _MainPageState extends State<MainPage> {
                         children: [
                           AlertDialog(
                             backgroundColor: Colors.white,
-                            title: Text("Yer Ekle"),
+                            title: Text(AppStrings.addPlace),
                             content: Column(
                               children: [
                                 TextField(
@@ -189,9 +190,9 @@ class _MainPageState extends State<MainPage> {
                                   },
                                   controller: _placeNameController,
                                   decoration: InputDecoration(
-                                    labelText: 'Yer İsmi',
+                                    labelText: AppStrings.placeName,
                                     labelStyle: TextStyle(color: Colors.grey),
-                                    hintText: 'Yer ismini giriniz',
+                                    hintText: AppStrings.addPlaceName,
                                     enabledBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(color: Colors.grey), // Pasif durumdaki sınır rengi
                                     ),
@@ -226,7 +227,7 @@ class _MainPageState extends State<MainPage> {
                                   _placeNameController.text = "";
                                   Navigator.pop(context);
                                 },
-                                child: Text("İptal", style: TextStyle(color: Colors.grey))
+                                child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey))
                               ),
                               TextButton(
                                 onPressed: () async {
@@ -236,7 +237,7 @@ class _MainPageState extends State<MainPage> {
                                   await getPlaces();
                                   setState(() {});
                                 },
-                                child: Text("Ekle", style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold))
+                                child: Text(AppStrings.add, style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold))
                               )
                             ],
                           ),
@@ -275,17 +276,17 @@ class _MainPageState extends State<MainPage> {
                       context: context,
                       builder: (context) => Platform.isIOS
                       ? CupertinoAlertDialog(
-                          title: Text("Kaydı Sil"),
-                          content: Text("Kaydı silmek istediğinize emin misiniz?"),
+                          title: Text(AppStrings.deletePlace),
+                          content: Text(AppStrings.sureDeletePlace),
                           actions: [
                             CupertinoDialogAction(
-                              child: Text("Hayır", style: TextStyle(color: Colors.grey.shade600)),
+                              child: Text(AppStrings.no, style: TextStyle(color: Colors.grey.shade600)),
                               onPressed: () {
                                 Navigator.of(context).pop(false);
                               },
                             ),
                             CupertinoDialogAction(
-                              child: Text("Evet", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                              child: Text(AppStrings.yes, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                               onPressed: () {
                                 Navigator.of(context).pop(true);
                               },
@@ -293,20 +294,20 @@ class _MainPageState extends State<MainPage> {
                           ],
                         )
                       : AlertDialog(
-                        title: Text("Kaydı Sil"),
-                        content: Text("Kaydı silmek istediğinize emin misiniz?"),
+                        title: Text(AppStrings.deletePlace),
+                        content: Text(AppStrings.sureDeletePlace),
                         actions: [
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop(false);
                             },
-                            child: Text("Hayır", style: TextStyle(color: Colors.grey)),
+                            child: Text(AppStrings.no, style: TextStyle(color: Colors.grey)),
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop(true);
                             },
-                            child: Text("Evet", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                            child: Text(AppStrings.yes, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -322,7 +323,7 @@ class _MainPageState extends State<MainPage> {
                       builder: (context) {
                         return Platform.isIOS
                         ? CupertinoAlertDialog(
-                          title: Text("Güncelle"),
+                          title: Text(AppStrings.update),
                           content: Material(
                             color: Colors.transparent,
                             child: Column(
@@ -333,9 +334,9 @@ class _MainPageState extends State<MainPage> {
                                   },
                                   controller: _placeNameUpdateController,
                                   decoration: InputDecoration(
-                                    labelText: 'Yer İsmi',
+                                    labelText: AppStrings.placeName,
                                     labelStyle: TextStyle(color: Colors.grey),
-                                    hintText: 'Yer ismini giriniz',
+                                    hintText: AppStrings.addPlaceName,
                                     enabledBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(color: Colors.grey),
                                     ),
@@ -364,14 +365,14 @@ class _MainPageState extends State<MainPage> {
                           ),
                           actions: [
                             CupertinoDialogAction(
-                              child: Text("İptal", style: TextStyle(color: Colors.grey.shade600)),
+                              child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey.shade600)),
                               onPressed: () {
                                 _placeNameController.text = "";
                                 Navigator.pop(context);
                               }
                             ),
                             CupertinoDialogAction(
-                              child: Text("Güncelle", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                              child: Text(AppStrings.update, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                               onPressed: () async {
                                 await updatePlace(context);
                                 _placeNameUpdateController.text = "";
@@ -388,7 +389,7 @@ class _MainPageState extends State<MainPage> {
                           children: [
                             AlertDialog(
                               backgroundColor: Colors.white,
-                              title: Text("Güncelle"),
+                              title: Text(AppStrings.update),
                               content: Column(
                                 children: [
                                   TextField(
@@ -397,9 +398,9 @@ class _MainPageState extends State<MainPage> {
                                     },
                                     controller: _placeNameUpdateController,
                                     decoration: InputDecoration(
-                                      labelText: 'Yer İsmi',
+                                      labelText: AppStrings.placeName,
                                       labelStyle: TextStyle(color: Colors.grey),
-                                      hintText: 'Yer ismini giriniz',
+                                      hintText: AppStrings.addPlaceName,
                                       enabledBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(color: Colors.grey),
                                       ),
@@ -431,7 +432,7 @@ class _MainPageState extends State<MainPage> {
                                     _placeNameController.text = "";
                                     Navigator.pop(context);
                                   },
-                                  child: Text("İptal", style: TextStyle(color: Colors.grey))
+                                  child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey))
                                 ),
                                 TextButton(
                                   onPressed: () async {
@@ -441,7 +442,7 @@ class _MainPageState extends State<MainPage> {
                                     await getPlaces();
                                     setState(() {});
                                   },
-                                  child: Text("Güncelle", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))
+                                  child: Text(AppStrings.update, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))
                                 )
                               ],
                             ),
@@ -525,7 +526,7 @@ class _MainPageState extends State<MainPage> {
                               PlaceUpdate.placeId = places.placeId.toString();
                               await updatePlace(context);
                               await getPlaces();
-                              successMessage(context, "Derece değiştirildi");
+                              successMessage(context, AppStrings.changeRank);
                               setState(() {});
                             },
                           ),
@@ -597,7 +598,7 @@ class _MainPageState extends State<MainPage> {
             alignment: Alignment.topCenter,
             child: Padding(
               padding: const EdgeInsets.only(top: 20),
-              child: Text("Veri Bulunamadı", style: TextStyle(color: Colors.white, fontSize: ScreenHelper.screenWidth(context) < 500 ? 16 : 20),
+              child: Text(AppStrings.noData, style: TextStyle(color: Colors.white, fontSize: ScreenHelper.screenWidth(context) < 500 ? 16 : 20),
               ),
             )
           ),

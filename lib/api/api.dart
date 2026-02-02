@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class Api {
 
-  static Future<http.Response> checkUser(String userName, String password) async {
+  static Future<http.Response> login(String userName, String password) async {
     var url = "https://mobiledocs.aktekweb.com/api/auth/login";
     String body = json.encode({'UserName': userName, 'Password': password});
       return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);

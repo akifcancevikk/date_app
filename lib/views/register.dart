@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:date_app/api/service.dart';
+import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/views/login.dart';
 import 'package:date_app/widgets/show_dialogs/show_info.dart';
@@ -36,7 +37,7 @@ class _RegisterState extends State<Register> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(flex: 2, child: Align(alignment: Alignment.bottomLeft, child: Text("Kayıt Olmak İçin Bilgilerinizi Giriniz!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
+              Expanded(flex: 2, child: Align(alignment: Alignment.bottomLeft, child: Text(AppStrings.registerTitle, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),))),
               Expanded(
                 flex: 10,
                 child: Column(
@@ -45,7 +46,7 @@ class _RegisterState extends State<Register> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Kullanıcı Adı", style: TextStyle(fontWeight: FontWeight.bold),),
+                        Text(AppStrings.username, style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
                           cursorColor: Colors.black,
@@ -54,7 +55,7 @@ class _RegisterState extends State<Register> {
                           },
                           controller: _usernameController,
                           decoration: InputDecoration(
-                            hintText: 'Kullanıcı adınızı girin...',
+                            hintText: AppStrings.username,
                             hintStyle: TextStyle(color: Colors.grey),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(5),
@@ -81,7 +82,7 @@ class _RegisterState extends State<Register> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Şifre", style: TextStyle(fontWeight: FontWeight.bold),),
+                        Text(AppStrings.password, style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
                           cursorColor: Colors.black,
@@ -90,7 +91,7 @@ class _RegisterState extends State<Register> {
                           },
                           controller: _passwordController,
                           decoration: InputDecoration(
-                            hintText: 'Şifrenizi girin...',
+                            hintText: AppStrings.password,
                             hintStyle: TextStyle(color: Colors.grey),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
                             focusedBorder: OutlineInputBorder(
@@ -116,13 +117,13 @@ class _RegisterState extends State<Register> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Şifre Tekrar", style: TextStyle(fontWeight: FontWeight.bold),),
+                        Text(AppStrings.passwordAgain, style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 10,),
                         TextField(
                           cursorColor: Colors.black,
                           controller: _passwordAgainController,
                           decoration: InputDecoration(
-                            hintText: 'Şifrenizi tekrar girin...',
+                            hintText: AppStrings.passwordAgain,
                             hintStyle: TextStyle(color: Colors.grey),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
                             focusedBorder: OutlineInputBorder(
@@ -148,17 +149,17 @@ class _RegisterState extends State<Register> {
                     ElevatedButton(
                       onPressed: () async {
                         if(_usernameController.text.isEmpty){
-                          errorMessage(context, "Kullanıcı adı boş olamaz");
+                          errorMessage(context, AppStrings.blankUsername);
                         }
                         else if(_passwordAgainController.text.isEmpty || _passwordController.text.isEmpty){
-                          errorMessage(context, "Şifreler boş olamaz");
+                          errorMessage(context, AppStrings.blankPassword);
                         }
                         else if (_passwordController.text != _passwordAgainController.text){
-                          errorMessage(context, "Şifreler uyuşmuyor!");
+                          errorMessage(context, AppStrings.noMatchPassword);
                         }  else if (_passwordController.text == _passwordAgainController.text){
                           await register(context);
                         } else{
-                          errorMessage(context, "Beklenmedik hata");
+                          errorMessage(context, AppStrings.error);
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -168,7 +169,7 @@ class _RegisterState extends State<Register> {
                           borderRadius: BorderRadius.circular(5),
                         ),
                       ),
-                      child: Text('Kayıt Ol', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
+                      child: Text(AppStrings.registerButton, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),),
                     ),
                   ],
                 ),
@@ -178,10 +179,10 @@ class _RegisterState extends State<Register> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Hesabınız var mı?"),
+                    Text(AppStrings.haveAccount),
                     GestureDetector(
                       onTap: () => Navigator.pushAndRemoveUntil(context, CupertinoPageRoute(builder: (context) => LoginPage(),), (route) => false,),
-                      child: Text(" Giriş Yapın", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
+                      child: Text(AppStrings.loginButton, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
                   ],
                 ),
               )

@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:date_app/api/api.dart';
+import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/lists.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/helper/url_helper.dart';
@@ -14,9 +15,9 @@ import 'package:date_app/widgets/show_dialogs/show_info.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<void> checkUser(BuildContext context) async {
+Future<void> login(BuildContext context) async {
   try {
-    var response = await Api.checkUser(User.userName!, User.password!);
+    var response = await Api.login(User.userName!, User.password!);
     if (response.statusCode == 200) {
       var userData = json.decode(response.body);
       if (userData['status'] == 0) {
@@ -39,15 +40,15 @@ Future<void> checkUser(BuildContext context) async {
         errorMessage(context, "${userData['message']}");
       }
     } else {
-      errorMessage(context, 'İstek sırasında bir hata oluştu.');
+      errorMessage(context, AppStrings.errorServer);
     }
   } catch (error) {
     if(User.password == null)
     {
-      errorMessage(context, 'Şifre boş bırakıldı.');
+      errorMessage(context, AppStrings.emptyPassword);
     }
     else {
-      errorMessage(context, 'İnternet bağlantısı bulunamadı.');
+      errorMessage(context, AppStrings.noConnection);
     }
   }
 }
@@ -60,12 +61,12 @@ Future<void> register(BuildContext context) async {
       if (userData['status'] == 0) {
         User.userName = RegisterUser.userName;
         User.password = RegisterUser.password;
-        await checkUser(context);
+        await login(context);
       } else {
         errorMessage(context, "${userData['message']}");
       }
     } else {
-      errorMessage(context, 'Böyle bir kullanıcı kayıtlı. Farklı bir ad deneyin');
+      errorMessage(context, AppStrings.userExist);
     }
   } catch (error) {
       errorMessage(context, "$error");
@@ -100,7 +101,7 @@ Future<void> addPlace(BuildContext context) async {
   var rating = Place.placeRating;
   await Api.addPlace(userId!, placeName!, rating!).then((response) {
     if (response.statusCode == 200) {
-      successMessage(context, "Yer Eklendi");
+      successMessage(context, AppStrings.placeAdded);
       Place.placeName = null;
       Place.placeRating = 1;
     }
@@ -114,7 +115,7 @@ Future<void> updatePlace(BuildContext context) async {
   var rating = PlaceUpdate.placeRating;
   await Api.updatePlace(userId!, placeId!, placeName!, rating!).then((response) {
     if (response.statusCode == 200) {
-      successMessage(context, "Güncellendi");
+      successMessage(context, AppStrings.updated);
       PlaceUpdate.placeName = null;
       PlaceUpdate.placeRating = 1;
       PlaceUpdate.placeId=null;
@@ -128,7 +129,7 @@ Future<void> addNote(BuildContext context) async {
   var orderIndex = PlaceDetail.orderIndex;
   await Api.addNote(placeId!, noteText!, orderIndex!).then((response) {
     if (response.statusCode == 200) {
-      successMessage(context, "Not Eklendi");
+      successMessage(context, AppStrings.noteAdded);
       PlaceDetail.placeId = null;
       PlaceDetail.noteText = null;
       PlaceDetail.orderIndex = null;
@@ -141,7 +142,7 @@ Future<void> addImagePath(BuildContext context) async {
   var imagePath = PlaceDetail.imagePath;
   await Api.addImagePath(placeId!, imagePath!).then((response) {
     if (response.statusCode == 200) {
-      successMessage(context, "Resim Eklendi");
+      successMessage(context, AppStrings.imageAdded);
       PlaceDetail.placeId = null;
       PlaceDetail.imagePath = null;
     }
@@ -154,7 +155,7 @@ Future<void> deletePlace(BuildContext context) async {
   var userName = Login.userName;
   await Api.deletePlace(userId!, placeId!, userName!).then((response) {
     if (response.statusCode == 200) {
-      successMessage(context, "Kayıt Silindi");
+      successMessage(context, AppStrings.deleted);
     }
   });
 }
