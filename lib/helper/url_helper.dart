@@ -7,4 +7,7 @@ class Url {
 
   static String baseUrl = "https://mobiledocs.aktekweb.com/api/dateapi/";
   static String imgUrl = "https://mobiledocs.aktekweb.com/places/${Login.userName}/";
+
+  
+  static String memories = "https://explore-log.emrecanful.me/api/";
 }

@@ -1,93 +1,200 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:date_app/global/variables.dart';
+import 'package:date_app/helper/device_helper.dart';
 import 'package:date_app/helper/url_helper.dart';
 import 'package:http/http.dart' as http;
 
 class Api {
 
-  static Future<http.Response> login(String userName, String password) async {
-    var url = "https://mobiledocs.aktekweb.com/api/auth/login";
-    String body = json.encode({'UserName': userName, 'Password': password});
-      return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);
+  static Future<http.Response> login(String email, String password) async {
+    final deviceName = await DeviceHelper.getDeviceName();
+
+    var url = "${Url.memories}auth/login";
+    String body = json.encode({
+      'email': email,
+      'password': password,
+      'device_name': deviceName,
+    });
+
+    return http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: body,
+    );
   }
 
-  static Future<http.Response> register(String userName, String password) async {
-    var url = "https://mobiledocs.aktekweb.com/api/auth/register";
-    String body = json.encode({'UserName': userName, 'Password': password});
-      return http.post(Uri.parse(url), headers: {"Content-Type": "application/json"}, body: body);
+  static Future<http.Response> register(String email, String password, String passwordConfirmation, String name) async {
+    var url = "${Url.memories}auth/register";
+    String body = json.encode({
+      'email': email,
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+      'name': name,
+    });
+
+    return http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: body,
+    );
   }
 
+  static Future<http.Response> checkUser() async {
+    var url = "${Url.memories}user";
+    return http.get(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+    );
+  }
 
-static Future<http.Response> getPlaces(String userId) async {
-    var url = "${Url.baseUrl}getPlaces";
-    Map<String, String> headers = {
-      "Content-Type": "application/json",
+  static Future<http.Response> logout() async {
+    var url = "${Url.memories}auth/logout";
+    return http.delete(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+    );
+  }
+
+  static Future<http.Response> getMemories({int page = 1}) async {
+    var url = "${Url.memories}memories?page=$page";
+    return http.get(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+    );
+  }
+
+  static Future<http.Response> create(String title, int rating) async {
+    var url = "${Url.memories}memories";
+    String body = json.encode({
+      'title': title,
+      'rating': rating,
+    });
+
+    return http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+      body: body,
+    );
+  }
+
+  static Future<http.Response> updateMemory(String title, int rating, int id) async {
+    var url = "${Url.memories}memories/$id";
+    String body = json.encode({
+      'title': title,
+      'rating': rating,
+    });
+
+    return http.patch(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+      body: body,
+    );
+  }
+
+  static Future<http.Response> deleteMemory(int id) async {
+    var url = "${Url.memories}memories/$id";
+    return http.delete(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+    );
+  }
+
+  static Future<http.Response> updateNote(
+    int id,
+    List<String> notes,
+  ) async {
+    final url = "${Url.memories}memories/$id/notes";
+
+    return http.put(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+      body: jsonEncode({
+        "notes": notes,
+      }),
+    );
+  }
+
+  static Future<http.StreamedResponse> updateImage(
+    int id,
+    List<File> images,
+  ) async {
+    final url = "${Url.memories}memories/$id/image";
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(url),
+    );
+
+    request.headers.addAll({
+      "Accept": "application/json",
       "Authorization": "Bearer ${Login.userToken}",
-    };
+    });
 
-    String body = json.encode({'UserId': userId});
-    return http.post(Uri.parse(url), headers: headers, body: body);
+    for (final file in images) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'images[]', // 🔥 backend field name
+          file.path,
+        ),
+      );
+    }
+
+    return request.send();
   }
 
+  static Future<http.Response> deleteImage(
+    int id,
+    String imageName,
+    List<String> notes,
+  ) async {
+    final url = "${Url.memories}memories/$id/image/$imageName";
 
-  static Future<http.Response> getPlaceDetails(String userId, String placeId) async {
-    var url = "${Url.baseUrl}getPlaceDetails";
-     Map<String, String> headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ${Login.userToken}",
-    };
-    String body = json.encode({'UserId': userId, "PlaceId": placeId});
-      return http.post(Uri.parse(url), headers: headers, body: body);
-  }
-
-  static Future<http.Response> addPlace(String userId, String placeName, int rating) async {
-    var url = "${Url.baseUrl}addPlace";
-     Map<String, String> headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ${Login.userToken}",
-    };
-    String body = json.encode({'UserId': userId, "PlaceName": placeName, "rating": rating});
-      return http.post(Uri.parse(url), headers: headers, body: body);
-  }
-
-  static Future<http.Response> updatePlace(String userId, String placeId, String placeName, int rating) async {
-    var url = "${Url.baseUrl}updatePlace";
-     Map<String, String> headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ${Login.userToken}",
-    };
-    String body = json.encode({'UserId': userId, "PlaceId": placeId, "PlaceName": placeName, "rating": rating});
-      return http.post(Uri.parse(url), headers: headers, body: body);
-  }
-
-  static Future<http.Response> addNote(int placeId, String noteText, int orderIndex) async {
-    var url = "${Url.baseUrl}addNote";
-     Map<String, String> headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ${Login.userToken}",
-    };
-    String body = json.encode({'PlaceId': placeId, "NoteText": noteText, "OrderIndex": orderIndex});
-      return http.post(Uri.parse(url), headers: headers, body: body);
-  }
-
-  static Future<http.Response> addImagePath(int placeId, String imagePath) async {
-    var url = "${Url.baseUrl}addImagePath";
-     Map<String, String> headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ${Login.userToken}",
-    };
-    String body = json.encode({'PlaceId': placeId, "ImagePath": imagePath});
-      return http.post(Uri.parse(url), headers: headers, body: body);
-  }
-
-  static Future<http.Response> deletePlace(String userId, String placeId, String userName) async {
-    var url = "${Url.baseUrl}deletePlace";
-     Map<String, String> headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ${Login.userToken}",
-    };
-    String body = json.encode({'UserId': userId, "PlaceId": placeId, "UserName": userName});
-      return http.post(Uri.parse(url), headers: headers, body: body);
+    return http.delete(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer ${Login.userToken}",
+      },
+      body: jsonEncode({
+        "notes": notes,
+      }),
+    );
   }
 
 }

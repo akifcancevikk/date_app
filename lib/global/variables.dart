@@ -1,7 +1,15 @@
-class User {
+class LoginVariables {
   static String? userName;
+  static String? email;
   static String? password;
   static String? id;
+}
+
+class RegisterVariables {
+  static String? name;
+  static String? email;
+  static String? password;
+  static String? passwordConfirmation;
 }
 
 class Place{
@@ -10,10 +18,15 @@ class Place{
   static int? placeRating = 1;
 }
 
-class PlaceUpdate{
-  static String? placeId;
-  static String? placeName;
-  static int? placeRating = 1;
+class Memory{
+  static String? memoryName;
+  static int? memoryRating = 1;
+}
+
+class MemoryUpdate{
+  static int? memoryId;
+  static String? memoryName;
+  static int? memoryRating = 1;
 }
 
 class PlaceDetail{
@@ -31,11 +44,8 @@ class DeletePlace{
 }
 
 class Login{
+  static String? email;
   static String? userName;
   static String? userToken;
-}
-
-class RegisterUser{
-  static String? userName;
-  static String? password;
+  static bool? isTokenValid;
 }

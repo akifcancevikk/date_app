@@ -3,14 +3,17 @@ class AppStrings {
   // LOGIN / REGISTER
   static const String loginTitle = "You need to\nlog in!";
   static const String username = 'Username';
+  static const String email = 'Email';
   static const String password = 'Password';
   static const String loginButton = 'Login';
   static const String registerButton = 'Register';
   static const String register = "Don't have an account?";
   static const String registerTitle = "Enter your information to register!";
   static const String passwordAgain = "Password Again";
-  static const String blankUsername = "Username cannot be empty";
+  static const String blankEmail = "Email cannot be empty";
+  static const String blankUsername = "Name cannot be empty";
   static const String blankPassword = "Password cannot be empty";
+  static const String invalidEmail = "Invalid email";
   static const String noMatchPassword = "Passwords do not match";
   static const String haveAccount = "Already have an account?";
 

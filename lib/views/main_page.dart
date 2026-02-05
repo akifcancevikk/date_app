@@ -1,22 +1,17 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_build_context_synchronously, sort_child_properties_last
-
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:date_app/api/service.dart';
 import 'package:date_app/core/app_strings.dart';
-import 'package:date_app/global/lists.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/helper/date_format.dart';
 import 'package:date_app/helper/screen_helper.dart';
-import 'package:date_app/helper/url_helper.dart';
-import 'package:date_app/views/login.dart';
-import 'package:date_app/views/place_detail.dart';
-import 'package:date_app/widgets/show_dialogs/show_info.dart';
+import 'package:date_app/provider/provider.dart';
+import 'package:date_app/views/detail_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:responsive_grid_list/responsive_grid_list.dart';
+import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -26,583 +21,362 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  final TextEditingController _placeNameController = TextEditingController();
-  final TextEditingController _placeNameUpdateController = TextEditingController();
+  final TextEditingController _memoryNameController = TextEditingController();
+  final TextEditingController _memoryNameUpdateController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  bool isMoreLoading = false;
+  bool isLoading = false;
 
-  Future<void> logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('password');
-    Login.userName = null;
-    Navigator.pushAndRemoveUntil(
-        context, MaterialPageRoute(builder: (context) => LoginPage()), (Route<dynamic> route) => false);
+  @override
+  void initState() {
+    super.initState();
+    isLoading = true;
+    _scrollController.addListener(_scrollListener);
+    _initializeAsyncData();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final provider = context.read<MemoryProvider>();
+      if (provider.hasNextPage && !isMoreLoading) {
+        _loadMore();
+      }
+    }
+  }
+
+  Future<void> _loadMore() async {
+    setState(() => isMoreLoading = true);
+    await fetchMemories(context);
+    setState(() => isMoreLoading = false);
+  }
+
+  Future<void> _initializeAsyncData() async {
+    await fetchMemories(context);
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
   @override
   void dispose() {
-    _placeNameController.dispose();
+    _memoryNameController.dispose();
+    _memoryNameUpdateController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      child: Scaffold(
-          appBar: AppBar(
-            leading: SizedBox(),
-            toolbarHeight: 30,
-            backgroundColor: Colors.black,
-          ),
-          backgroundColor: Colors.black,
-          floatingActionButton: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FloatingActionButton.small(
-                heroTag: 3,
-                backgroundColor: Colors.red,
-                onPressed: null,
-                child: IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      builder: (context) {
-                        return Platform.isIOS
-                        ? CupertinoAlertDialog(
-                          title: Text(AppStrings.exit),
-                          content: Text(AppStrings.sureExit),
-                          actions: [
-                            CupertinoDialogAction(
-                              child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey.shade600)),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            CupertinoDialogAction(
-                              child: Text(AppStrings.exit, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                              onPressed: () async => logout(context),
-                            ),
-                          ],
-                        )
-                        : AlertDialog(
-                          backgroundColor: Colors.white,
-                          title: Text(AppStrings.exit),
-                          content: Text(AppStrings.sureExit),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey))
-                            ),
-                            TextButton(
-                              onPressed: () async => logout(context),
-                              child: Text(AppStrings.exit, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
-                            )
-                          ],
-                        );
+    final memoriesProvider = context.watch<MemoryProvider>();
+    final memories = memoriesProvider.places;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton.small(
+            heroTag: "exit",
+            backgroundColor: Colors.red,
+            child: Icon(Icons.exit_to_app),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: Text(AppStrings.exit),
+                  content: Text(AppStrings.sureExit),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(AppStrings.cancel),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await logout(context);
                       },
-                    );
-                  },
-                  icon: Icon(Icons.exit_to_app, color: Colors.white)
+                      child: Text(
+                        AppStrings.exit,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              FloatingActionButton(
-                heroTag: 5,
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder: (context) {
-                    return Platform.isIOS
-                    ? CupertinoAlertDialog(
-                        title: Text(AppStrings.addPlace),
-                        content: Material(
-                          color: Colors.transparent,
-                          child: Column(
-                            children: [
-                              TextField(
-                                onChanged: (value) {
-                                  Place.placeName = value;
-                                },
-                                controller: _placeNameController,
-                                decoration: InputDecoration(
-                                  labelText: AppStrings.placeName,
-                                  labelStyle: TextStyle(color: Colors.grey),
-                                  hintText: AppStrings.addPlaceName,
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.grey), // Pasif durumdaki sınır rengi
-                                  ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.grey), // Focus durumundaki sınır rengi
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 20),
-                              RatingBar.builder(
-                                itemSize: 35,
-                                glow: true,
-                                initialRating: Place.placeRating!.toDouble(),
-                                minRating: 1,
-                                direction: Axis.horizontal,
-                                allowHalfRating: false,
-                                itemCount: 5,
-                                itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                                itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
-                                onRatingUpdate: (rating) {
-                                  Place.placeRating = rating.toInt();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        actions: [
-                          CupertinoDialogAction(
-                            child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey.shade600)),
-                            onPressed: () {
-                              _placeNameController.text = "";
-                              Navigator.pop(context);
-                            }
-                          ),
-                          CupertinoDialogAction(
-                            child: Text(AppStrings.add, style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold)),
-                            onPressed: () async {
-                              await addPlace(context);
-                              _placeNameController.text = "";
-                              Navigator.pop(context);
-                              await getPlaces();
-                              setState(() {});
-                            },
-                          ),
-                        ],
-                      )
-                      : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AlertDialog(
-                            backgroundColor: Colors.white,
-                            title: Text(AppStrings.addPlace),
-                            content: Column(
-                              children: [
-                                TextField(
-                                  onChanged: (value) {
-                                    Place.placeName = value;
-                                  },
-                                  controller: _placeNameController,
-                                  decoration: InputDecoration(
-                                    labelText: AppStrings.placeName,
-                                    labelStyle: TextStyle(color: Colors.grey),
-                                    hintText: AppStrings.addPlaceName,
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.grey), // Pasif durumdaki sınır rengi
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.grey), // Focus durumundaki sınır rengi
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 20),
-                                RatingBar.builder(
-                                  itemSize: 35,
-                                  glow: true,
-                                  initialRating: 1,
-                                  minRating: 1,
-                                  direction: Axis.horizontal,
-                                  allowHalfRating: false,
-                                  itemCount: 5,
-                                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                                  itemBuilder: (context, _) => Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                  ),
-                                  onRatingUpdate: (rating) {
-                                    Place.placeRating = rating.toInt();
-                                  },
-                                ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  _placeNameController.text = "";
-                                  Navigator.pop(context);
-                                },
-                                child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey))
-                              ),
-                              TextButton(
-                                onPressed: () async {
-                                  await addPlace(context);
-                                  _placeNameController.text = "";
-                                  Navigator.pop(context);
-                                  await getPlaces();
-                                  setState(() {});
-                                },
-                                child: Text(AppStrings.add, style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold))
-                              )
-                            ],
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Icon(
-                  Icons.add,
-                  size: 32,
-                  color: Colors.black,
-                ),
-                backgroundColor: Colors.white,
-              ),
-            ],
+              );
+            },
           ),
-          body: GlobalLists.places[0].placeId != 0
-        ? ResponsiveGridList(
-            listViewBuilderOptions: ListViewBuilderOptions(
-              physics: BouncingScrollPhysics(),
-            ),
-            horizontalGridMargin: 8,
-            horizontalGridSpacing: 8,
-            verticalGridSpacing: 8,
-            verticalGridMargin: 8,
-            minItemWidth: 350,
-            children: List.generate(GlobalLists.places.length, (index) {
-              final places = GlobalLists.places[index];
+          SizedBox(height: 10),
+          FloatingActionButton(
+            heroTag: "add",
+            backgroundColor: Colors.white,
+            child: Icon(Icons.add, color: Colors.black),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: Text(AppStrings.addPlace),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _memoryNameController,
+                        decoration: InputDecoration(
+                          labelText: AppStrings.placeName,
+                        ),
+                        onChanged: (v) => Memory.memoryName = v,
+                      ),
+                      SizedBox(height: 20),
+                      RatingBar.builder(
+                        initialRating: 1,
+                        minRating: 1,
+                        itemCount: 5,
+                        itemBuilder: (_, __) =>
+                            Icon(Icons.star, color: Colors.amber),
+                        onRatingUpdate: (r) =>
+                            Memory.memoryRating = r.toInt(),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        _memoryNameController.clear();
+                        Navigator.pop(context);
+                      },
+                      child: Text(AppStrings.cancel),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await create(context);
+                        _memoryNameController.clear();
+                        Navigator.pop(context);
+                        await fetchMemories(context);
+                      },
+                      child: Text(AppStrings.add),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+
+      body: 
+      Skeletonizer(
+        enabled: isLoading,
+        child: ListView.builder(
+            controller: _scrollController,
+            itemCount: memories.length + (isMoreLoading ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == memories.length) {
+                return Center(child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ));
+              }
+              final memory = memories[index];
+        
               return Dismissible(
-                key: ValueKey(places.placeId),
+                key: ValueKey(memory.id),
                 direction: DismissDirection.horizontal,
                 confirmDismiss: (direction) async {
                   if (direction == DismissDirection.endToStart) {
                     return await showDialog(
                       context: context,
-                      builder: (context) => Platform.isIOS
-                      ? CupertinoAlertDialog(
-                          title: Text(AppStrings.deletePlace),
-                          content: Text(AppStrings.sureDeletePlace),
-                          actions: [
-                            CupertinoDialogAction(
-                              child: Text(AppStrings.no, style: TextStyle(color: Colors.grey.shade600)),
-                              onPressed: () {
-                                Navigator.of(context).pop(false);
-                              },
-                            ),
-                            CupertinoDialogAction(
-                              child: Text(AppStrings.yes, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                              onPressed: () {
-                                Navigator.of(context).pop(true);
-                              },
-                            ),
-                          ],
-                        )
-                      : AlertDialog(
+                      builder: (_) => AlertDialog(
                         title: Text(AppStrings.deletePlace),
                         content: Text(AppStrings.sureDeletePlace),
                         actions: [
                           TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(false);
-                            },
-                            child: Text(AppStrings.no, style: TextStyle(color: Colors.grey)),
+                            onPressed: () =>
+                                Navigator.pop(context, false),
+                            child: Text(AppStrings.no),
                           ),
                           TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
+                            onPressed: () async {
+                              await deleteMemory(context, memory.id);
+                                Navigator.pop(context, true);
                             },
-                            child: Text(AppStrings.yes, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                            child: Text(
+                              AppStrings.yes,
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                         ],
                       ),
                     );
-                  } else if (direction == DismissDirection.startToEnd) {
-                    PlaceUpdate.placeId = places.placeId.toString();
-                    PlaceUpdate.placeRating = places.rating;
-                    PlaceUpdate.placeName = places.placeName;
-                    _placeNameUpdateController.text = places.placeName;
+                  } else {
+                    MemoryUpdate.memoryId = memory.id;
+                    MemoryUpdate.memoryName = memory.title;
+                    MemoryUpdate.memoryRating = memory.rating;
+                    _memoryNameUpdateController.text = memory.title;
                     showDialog(
                       context: context,
-                      barrierDismissible: true,
-                      builder: (context) {
-                        return Platform.isIOS
-                        ? CupertinoAlertDialog(
-                          title: Text(AppStrings.update),
-                          content: Material(
-                            color: Colors.transparent,
-                            child: Column(
-                              children: [
-                                TextField(
-                                  onChanged: (value) {
-                                    PlaceUpdate.placeName = value;
-                                  },
-                                  controller: _placeNameUpdateController,
-                                  decoration: InputDecoration(
-                                    labelText: AppStrings.placeName,
-                                    labelStyle: TextStyle(color: Colors.grey),
-                                    hintText: AppStrings.addPlaceName,
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.grey),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 20),
-                                RatingBar.builder(
-                                  itemSize: 35,
-                                  glow: true,
-                                  initialRating: PlaceUpdate.placeRating!.toDouble(),
-                                  minRating: 1,
-                                  direction: Axis.horizontal,
-                                  allowHalfRating: false,
-                                  itemCount: 5,
-                                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                                  itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
-                                  onRatingUpdate: (rating) {
-                                    PlaceUpdate.placeRating = rating.toInt();
-                                  },
-                                ),
-                              ],
+                      builder: (_) => AlertDialog(
+                        title: Text(AppStrings.update),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              controller:
+                                  _memoryNameUpdateController,
+                              onChanged: (v) =>
+                                  MemoryUpdate.memoryName = v,
+                            ),
+                            SizedBox(height: 20),
+                            RatingBar.builder(
+                              initialRating:
+                                  memory.rating.toDouble(),
+                              itemCount: 5,
+                              itemBuilder: (_, __) => Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                              ),
+                              onRatingUpdate: (r) =>
+                                  MemoryUpdate.memoryRating =
+                                      r.toInt(),
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(context),
+                            child: Text(AppStrings.cancel),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              await updateMemory(context);
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              AppStrings.update,
+                              style:
+                                  TextStyle(color: Colors.green),
                             ),
                           ),
-                          actions: [
-                            CupertinoDialogAction(
-                              child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey.shade600)),
-                              onPressed: () {
-                                _placeNameController.text = "";
-                                Navigator.pop(context);
-                              }
-                            ),
-                            CupertinoDialogAction(
-                              child: Text(AppStrings.update, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                              onPressed: () async {
-                                await updatePlace(context);
-                                _placeNameUpdateController.text = "";
-                                Navigator.pop(context);
-                                await getPlaces();
-                                setState(() {});
-                              },
-                            ),
-                          ],
-                        )
-                        : Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AlertDialog(
-                              backgroundColor: Colors.white,
-                              title: Text(AppStrings.update),
-                              content: Column(
-                                children: [
-                                  TextField(
-                                    onChanged: (value) {
-                                      PlaceUpdate.placeName = value;
-                                    },
-                                    controller: _placeNameUpdateController,
-                                    decoration: InputDecoration(
-                                      labelText: AppStrings.placeName,
-                                      labelStyle: TextStyle(color: Colors.grey),
-                                      hintText: AppStrings.addPlaceName,
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 20),
-                                  RatingBar.builder(
-                                    itemSize: 35,
-                                    glow: true,
-                                    initialRating: PlaceUpdate.placeRating!.toDouble(),
-                                    minRating: 1,
-                                    direction: Axis.horizontal,
-                                    allowHalfRating: false,
-                                    itemCount: 5,
-                                    itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                                    itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
-                                    onRatingUpdate: (rating) {
-                                      PlaceUpdate.placeRating = rating.toInt();
-                                    },
-                                  ),
-                                ],
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    _placeNameController.text = "";
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey))
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    await updatePlace(context);
-                                    _placeNameUpdateController.text = "";
-                                    Navigator.pop(context);
-                                    await getPlaces();
-                                    setState(() {});
-                                  },
-                                  child: Text(AppStrings.update, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))
-                                )
-                              ],
-                            ),
-                          ],
-                        );
-                      },
+                        ],
+                      ),
                     );
                     return false;
                   }
-                  return false;
                 },
-                onDismissed: (direction) async {
-                  if (direction == DismissDirection.endToStart) {
-                    DeletePlace.id = places.userId.toString();
-                    DeletePlace.placeId = places.placeId.toString();
-                    await deletePlace(context);
-                    await getPlaces();
-                    setState(() {});
-                  }
-                },
-                secondaryBackground: Container(
-                  color: Colors.transparent,
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Icon(
-                    Icons.delete_forever_outlined,
-                    color: Colors.red,
-                    size: 34,
-                  ),
-                ),
                 background: Container(
-                  color: Colors.transparent,
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Icon(
-                    Icons.update,
-                    color: Colors.green,
-                    size: 30,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade700,
+                    borderRadius: BorderRadius.circular(20)
                   ),
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.only(left: 20),
+                  child: Icon(Icons.update, color: Colors.white),
+                ),
+                secondaryBackground: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade700,
+                    borderRadius: BorderRadius.circular(20)
+                  ),
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.only(right: 20),
+                  child: Icon(Icons.delete, color: Colors.white),
                 ),
                 child: GestureDetector(
-                  onTap: () async {
-                    Place.placeId = places.placeId.toString();
-                    await getPlaceDetails();
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) => PlaceDetailPage(),
-                      )
-                    );
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context) => DetailPage(memory: memory,),));
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Container(
+                      width: ScreenHelper.screenWidth(context),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      width: ScreenHelper.screenWidth(context),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(places.placeName, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-                          Text(GlobalDateFormat.formatDate(places.visitDate), style: TextStyle(color: Colors.white),),
+                          Text(
+                            memory.title,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          Text(
+                            GlobalDateFormat.formatDate(
+                                memory.createdAt.toString()),
+                            style: TextStyle(color: Colors.white),
+                          ),
                           RatingBar.builder(
-                            ignoreGestures: false,
                             itemSize: 20,
-                            glow: true,
-                            initialRating: places.rating.toDouble(),
-                            direction: Axis.horizontal,
+                            initialRating:
+                                memory.rating.toDouble(),
                             allowHalfRating: false,
                             itemCount: 5,
-                            itemPadding: EdgeInsets.only(right: 10.0),
-                            unratedColor: Colors.grey,
-                            itemBuilder: (context, _) => Icon(
+                            itemBuilder: (_, __) => Icon(
                               Icons.star,
                               color: Colors.amber,
                             ),
-                            onRatingUpdate: (rating) async {
-                              PlaceUpdate.placeRating = rating.toInt();
-                              PlaceUpdate.placeName = places.placeName;
-                              PlaceUpdate.placeId = places.placeId.toString();
-                              await updatePlace(context);
-                              await getPlaces();
-                              successMessage(context, AppStrings.changeRank);
-                              setState(() {});
-                            },
+                            onRatingUpdate: (_) {},
                           ),
                           SizedBox(height: 10),
                           Container(
-                            decoration: BoxDecoration(
-                              border: Border(
-                                top: BorderSide(color: Colors.white, width: 10),
-                                left: BorderSide(color: Colors.white, width: 10),
-                                right: BorderSide(color: Colors.white, width: 10),
-                              ),
-                            ),
                             width: 280,
                             height: 400,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                top: BorderSide(
+                                    color: Colors.white, width: 10),
+                                left: BorderSide(
+                                    color: Colors.white, width: 10),
+                                right: BorderSide(
+                                    color: Colors.white, width: 10),
+                              ),
+                            ),
                             child: Column(
                               children: [
-                                places.imagePath != ""
-                                ? Expanded(
+                                Expanded(
                                   child: CachedNetworkImage(
-                                    imageUrl: "${Url.imgUrl}${places.imagePath}",
-                                    fit: BoxFit.fill,
-                                    placeholder: (context, url) => Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        Icon(Icons.error, color: Colors.red),
-                                  ),
-                                )
-                                : Expanded(
-                                  child: CachedNetworkImage(
-                                    imageUrl: "https://mobiledocs.aktekweb.com/places/bos.jpg",
-                                    placeholder: (context, url) => Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                      Icon(Icons.error, color: Colors.red),
+                                    imageUrl: memory.paths.isEmpty
+                                        ? "https://mobiledocs.aktekweb.com/places/bos.jpg"
+                                        : "https://explore-log.emrecanful.me/api/memories/${memory.id}/image/${memory.paths.first}",
+                                    httpHeaders: {
+                                      "Authorization": "Bearer ${Login.userToken}",
+                                      "Accept": "application/json",
+                                    },
                                     fit: BoxFit.cover,
-                                  ),
+                                    placeholder: (_, __) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    errorWidget: (_, __, ___) => const Icon(
+                                      Icons.error,
+                                      color: Colors.red,
+                                    ),
+                                  )
                                 ),
                                 Container(
                                   height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white, border: Border.all(width: 0, color: Colors.white)
-                                  ),
+                                  color: Colors.white,
                                   width: double.infinity,
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      places.noteText,
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    )
+                                  alignment: Alignment.center,
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 8),
+                                  child: Text(
+                                    memory.title,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                )
+                                ),
                               ],
-                            )
+                            ),
                           ),
                         ],
-                      )
+                      ),
                     ),
                   ),
                 ),
               );
-            }),
-          )
-        : ListTile(
-          title: Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Text(AppStrings.noData, style: TextStyle(color: Colors.white, fontSize: ScreenHelper.screenWidth(context) < 500 ? 16 : 20),
-              ),
-            )
+            },
           ),
-        )
       ),
     );
   }
