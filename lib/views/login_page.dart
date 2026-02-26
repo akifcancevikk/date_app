@@ -19,13 +19,15 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-    @override
+  @override
   void initState() {
     super.initState();
+    // Pre-fill email if it was stored from a previous session.
     _getStoredCredentials();
   }
 
   void _getStoredCredentials() async {
+    // Load stored email to help the user log in faster.
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Login.email = prefs.getString('email');
     if (Login.email != null) {
@@ -39,6 +41,7 @@ class _LoginPageState extends State<LoginPage> {
   bool isPasswordVisible = false;
   @override
   Widget build(BuildContext context) {
+    // Login form UI with validation and submit.
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -128,6 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(height: 20.0),
                       ElevatedButton(
                         onPressed: () async {
+                          // Validate inputs before attempting login.
                           if (!_formKey.currentState!.validate()) {
                             return;
                           }

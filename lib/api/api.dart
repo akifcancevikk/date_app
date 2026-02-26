@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 class Api {
 
+  // Authenticate user and return token response.
   static Future<http.Response> login(String email, String password) async {
     final deviceName = await DeviceHelper.getDeviceName();
 
@@ -27,6 +28,7 @@ class Api {
     );
   }
 
+  // Register a new user account.
   static Future<http.Response> register(String email, String password, String passwordConfirmation, String name) async {
     var url = "${Url.memories}auth/register";
     String body = json.encode({
@@ -46,6 +48,7 @@ class Api {
     );
   }
 
+  // Verify current user token.
   static Future<http.Response> checkUser() async {
     var url = "${Url.memories}user";
     return http.get(
@@ -58,6 +61,7 @@ class Api {
     );
   }
 
+  // Invalidate current session token.
   static Future<http.Response> logout() async {
     var url = "${Url.memories}auth/logout";
     return http.delete(
@@ -70,6 +74,7 @@ class Api {
     );
   }
 
+  // Fetch paginated memories list.
   static Future<http.Response> getMemories({int page = 1}) async {
     var url = "${Url.memories}memories?page=$page";
     return http.get(
@@ -82,6 +87,7 @@ class Api {
     );
   }
 
+  // Create a new memory record.
   static Future<http.Response> create(String title, int rating) async {
     var url = "${Url.memories}memories";
     String body = json.encode({
@@ -100,6 +106,7 @@ class Api {
     );
   }
 
+  // Update an existing memory record.
   static Future<http.Response> updateMemory(String title, int rating, int id) async {
     var url = "${Url.memories}memories/$id";
     String body = json.encode({
@@ -118,6 +125,7 @@ class Api {
     );
   }
 
+  // Delete a memory record.
   static Future<http.Response> deleteMemory(int id) async {
     var url = "${Url.memories}memories/$id";
     return http.delete(
@@ -130,6 +138,7 @@ class Api {
     );
   }
 
+  // Replace notes for a memory record.
   static Future<http.Response> updateNote(
     int id,
     List<String> notes,
@@ -149,6 +158,7 @@ class Api {
     );
   }
 
+  // Upload one or more images for a memory record.
   static Future<http.StreamedResponse> updateImage(
     int id,
     List<File> images,
@@ -177,6 +187,7 @@ class Api {
     return request.send();
   }
 
+  // Delete a single image by name while sending notes in the request body.
   static Future<http.Response> deleteImage(
     int id,
     String imageName,

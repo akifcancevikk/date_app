@@ -3,8 +3,8 @@ class MemoryModel {
   final int userId;
   final String title;
   final int rating;
-  final List<String> paths; // Yeni eklendi
-  final List<String> notes; // Yeni eklendi
+  final List<String> paths; // List of image file names
+  final List<String> notes; // User notes for the memory
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -20,6 +20,7 @@ class MemoryModel {
   });
 
   factory MemoryModel.fromJson(Map<String, dynamic> json) {
+    // Convert API payload into strongly typed model.
     return MemoryModel(
       id: json['id'],
       userId: json['user_id'],

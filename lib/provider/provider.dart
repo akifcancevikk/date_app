@@ -6,17 +6,20 @@ class MemoryProvider extends ChangeNotifier {
   int _currentPage = 1;
   bool _hasNextPage = true;
 
-  List<MemoryModel> get places => _memories;
+  // Expose read-only state for consumers.
+  List<MemoryModel> get memories => _memories;
   int get currentPage => _currentPage;
   bool get hasNextPage => _hasNextPage;
 
-  void addPlaces(List<MemoryModel> newMemories, bool hasNext) {
+  // Append new page results and advance pagination.
+  void addMemories(List<MemoryModel> newMemories, bool hasNext) {
     _memories.addAll(newMemories);
     _hasNextPage = hasNext;
     _currentPage++;
     notifyListeners();
   }
 
+  // Reset paging and cached memories.
   void clear() {
     _memories = [];
     _currentPage = 1;
@@ -24,17 +27,20 @@ class MemoryProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  void removePlaceById(int memoryId) {
+  // Remove a memory by id.
+  void removeMemoryById(int memoryId) {
     _memories.removeWhere((p) => p.id == memoryId);
     notifyListeners();
   }
 
-  void addSinglePlace(MemoryModel newMemory) {
+  // Insert a new memory at the top of the list.
+  void addMemory(MemoryModel newMemory) {
     _memories.insert(0, newMemory);
     notifyListeners();
   }
 
-  void updatePlace(MemoryModel updated) {
+  // Replace a memory item with updated data.
+  void updateMemory(MemoryModel updated) {
     final index = _memories.indexWhere((m) => m.id == updated.id);
     if (index != -1) {
       _memories[index] = updated;

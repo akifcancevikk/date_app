@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:date_app/api/api.dart';
+import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/models/memory_model.dart';
 import 'package:date_app/views/login_page.dart';
@@ -13,6 +14,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Handle login flow and persist token on success.
 Future<void> login(BuildContext context) async {
   var response = await Api.login(LoginVariables.email!, LoginVariables.password!);
   if (response.statusCode == 200) {
@@ -30,6 +32,7 @@ Future<void> login(BuildContext context) async {
   }
 }
 
+// Handle user registration flow.
 Future<void> register(BuildContext context) async {
   var response = await Api.register(RegisterVariables.email!, RegisterVariables.password!, RegisterVariables.passwordConfirmation!, RegisterVariables.name!);
   if (response.statusCode == 200) {
@@ -40,6 +43,7 @@ Future<void> register(BuildContext context) async {
   }
 }
 
+// Validate stored token and mark auth state.
 Future<void> checkUser(BuildContext context) async {
   var response = await Api.checkUser();
   if (response.statusCode == 200) {
@@ -51,6 +55,7 @@ Future<void> checkUser(BuildContext context) async {
   }
 }
 
+// Clear local session and return to login screen.
 Future<void> logout(BuildContext context) async {
   var response = await Api.logout();
   if (response.statusCode == 200) {
@@ -67,27 +72,7 @@ Future<void> logout(BuildContext context) async {
   }
 }
 
-// Future<void> getMemories(BuildContext context) async {
-//   final provider = context.read<MemoryProvider>();
-
-//   var response = await Api.getMemories();
-
-//   if (response.statusCode == 200) {
-//     final body = json.decode(response.body);
-
-//     final List list = body['data']['data'];
-
-//     final memories = list
-//         .map((e) => MemoryModel.fromJson(e))
-//         .toList();
-//     provider.setPlaces(memories);
-
-//   } else {
-//     var userData = json.decode(response.body);
-//     errorMessage(context, userData['message']);
-//   }
-// }
-
+// Fetch paginated memories and append to provider.
 Future<void> fetchMemories(BuildContext context, {bool isRefresh = false}) async {
   final provider = context.read<MemoryProvider>();
   
@@ -101,23 +86,25 @@ Future<void> fetchMemories(BuildContext context, {bool isRefresh = false}) async
     final memories = list.map((e) => MemoryModel.fromJson(e)).toList();
     bool hasNext = body['data']['next_page_url'] != null;
     
-    provider.addPlaces(memories, hasNext);
+    provider.addMemories(memories, hasNext);
   }
 }
 
+// Create a new memory and insert it into the list.
 Future<void> create(BuildContext context) async {
   var response = await Api.create(Memory.memoryName!, Memory.memoryRating!);
   if (response.statusCode >= 200 && response.statusCode < 300) {
     final body = json.decode(response.body);
     final newMemory = MemoryModel.fromJson(body['data']);
-    context.read<MemoryProvider>().addSinglePlace(newMemory);
-    successMessage(context, "Eklendi");
+    context.read<MemoryProvider>().addMemory(newMemory);
+    successMessage(context, AppStrings.placeAdded);
   } else {
     var userData = json.decode(response.body);
     errorMessage(context, "${userData['message']}");
   }
 }
 
+// Update an existing memory and refresh it in the list.
 Future<void> updateMemory(BuildContext context) async {
   final response = await Api.updateMemory(
     MemoryUpdate.memoryName!,
@@ -128,23 +115,25 @@ Future<void> updateMemory(BuildContext context) async {
   if (response.statusCode >= 200 && response.statusCode < 300) {
     final body = json.decode(response.body);
     final updatedMemory = MemoryModel.fromJson(body['data']);
-    context.read<MemoryProvider>().updatePlace(updatedMemory);
+    context.read<MemoryProvider>().updateMemory(updatedMemory);
   } else {
     final userData = json.decode(response.body);
     errorMessage(context, userData['message']);
   }
 }
 
+// Delete a memory and remove it from the list.
 Future<void> deleteMemory(BuildContext context, int id) async {
   var response = await Api.deleteMemory(id);
   if (response.statusCode >= 200 && response.statusCode < 300) {
-    context.read<MemoryProvider>().removePlaceById(id);
+    context.read<MemoryProvider>().removeMemoryById(id);
   } else {
     var userData = json.decode(response.body);
     errorMessage(context, "${userData['message']}");
   }
 }
 
+// Update notes for a memory and return updated model.
 Future<MemoryModel?> updateNote(
   BuildContext context,
   int id,
@@ -162,6 +151,7 @@ Future<MemoryModel?> updateNote(
   }
 }
 
+// Upload images for a memory and return updated model.
 Future<MemoryModel?> updateImage(
   BuildContext context,
   int id,
@@ -182,6 +172,7 @@ Future<MemoryModel?> updateImage(
   }
 }
 
+// Delete a single image from a memory and return updated model.
 Future<MemoryModel?> deleteImage(
   BuildContext context,
   int id,

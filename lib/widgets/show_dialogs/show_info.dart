@@ -4,6 +4,7 @@ import 'package:awesome_top_snackbar/awesome_top_snackbar.dart';
 import 'package:flutter/material.dart';
 
 
+// Show a warning snackbar at the top of the screen.
 warningMessage(BuildContext context, String text){
   return awesomeTopSnackbar(
     context,
@@ -18,6 +19,7 @@ warningMessage(BuildContext context, String text){
 }
 
 
+// Show an error snackbar at the top of the screen.
 errorMessage(BuildContext context, String text){
   return awesomeTopSnackbar(
     context, 
@@ -32,6 +34,7 @@ errorMessage(BuildContext context, String text){
 }
 
 
+// Show a success snackbar at the top of the screen.
 successMessage(BuildContext context, String text){
   return awesomeTopSnackbar(
     context, 

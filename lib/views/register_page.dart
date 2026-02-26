@@ -25,6 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Registration form UI with validation and submit.
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -240,6 +241,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       SizedBox(height: 40.0),
                       ElevatedButton(
                         onPressed: () async {
+                          // Validate inputs before attempting registration.
                           if (_formKey.currentState!.validate()) {
                             await register(context);
                           }

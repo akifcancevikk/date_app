@@ -5,6 +5,7 @@ import 'package:date_app/models/memory_model.dart';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
 import 'package:image_preview/preview_data.dart';
+import 'package:photo_viewer/photo_viewer.dart';
 
 class ImagePreviewPage extends StatefulWidget {
   final List<PreviewData> data;
@@ -25,40 +26,36 @@ class ImagePreviewPage extends StatefulWidget {
 }
 
 class _ImagePreviewPageState extends State<ImagePreviewPage> {
-  late final PageController _controller;
   late int _currentIndex;
   late List<PreviewData> _data;
   late List<String> _notes;
-  bool _showThumbnails = true;
+  void Function(int)? _jumpToPage;
   bool _isDeleting = false;
   MemoryModel? _updatedMemory;
 
   @override
   void initState() {
     super.initState();
+    // Initialize paging and local state.
     _currentIndex = widget.initialIndex;
     _data = List.of(widget.data);
     _notes = List.of(widget.notes);
-    _controller = PageController(initialPage: _currentIndex);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     super.dispose();
   }
 
-  void _toggleThumbnails() {
-    setState(() => _showThumbnails = !_showThumbnails);
-  }
-
   String _baseUrlFromImageUrl(String imageUrl) {
+    // Extract base endpoint so we can rebuild URLs after deletion.
     final index = imageUrl.indexOf('/image/');
     if (index == -1) return imageUrl;
     return imageUrl.substring(0, index);
   }
 
   String _imageNameFromUrl(String imageUrl) {
+    // Extract filename from the URL path.
     try {
       return Uri.parse(imageUrl).pathSegments.last;
     } catch (_) {
@@ -67,6 +64,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
   }
 
   List<PreviewData> _buildPreviewData(String baseUrl, List<String> paths) {
+    // Rebuild preview list from updated server data.
     return paths.asMap().entries.map((entry) {
       final index = entry.key;
       final imageName = entry.value;
@@ -84,6 +82,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
   }
 
   Future<void> _deleteCurrentImage() async {
+    // Delete the currently visible image from the server.
     if (_isDeleting || _data.isEmpty) return;
 
     final imageUrl = _data[_currentIndex].image?.url ?? '';
@@ -121,82 +120,88 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
       if (_currentIndex >= _data.length) {
         _currentIndex = _data.length - 1;
       }
-      _controller.jumpToPage(_currentIndex);
+      _jumpToPage?.call(_currentIndex);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Fullscreen preview with swipe, close, delete, and thumbnail strip.
+    final builders = _data
+        .where((p) => (p.image?.url ?? '').isNotEmpty)
+        .map<WidgetBuilder>((p) {
+      final url = p.image?.url ?? '';
+      return (context) => Center(
+            child: CachedNetworkImage(
+              imageUrl: url,
+              httpHeaders: {
+                "Authorization": "Bearer ${Login.userToken}",
+                "Accept": "application/json",
+              },
+              fit: BoxFit.contain,
+              placeholder: (_, __) => const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+              errorWidget: (_, __, ___) => const Icon(
+                Icons.broken_image,
+                color: Colors.white54,
+                size: 48,
+              ),
+            ),
+          );
+    }).toList();
+
     return DismissiblePage(
       direction: DismissiblePageDismissDirection.down,
       onDismissed: () => Navigator.of(context).pop(_updatedMemory),
       child: Scaffold(
         backgroundColor: Colors.black,
         body: SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _toggleThumbnails,
-                  child: PageView.builder(
-                    controller: _controller,
-                    itemCount: _data.length,
-                    onPageChanged: (index) {
-                      setState(() => _currentIndex = index);
-                    },
-                    itemBuilder: (context, index) {
-                      final image = _data[index].image;
-                      return Center(
-                        child: CachedNetworkImage(
-                          imageUrl: image?.url ?? '',
-                          httpHeaders: {
-                            "Authorization": "Bearer ${Login.userToken}",
-                            "Accept": "application/json",
-                          },
-                          fit: BoxFit.contain,
-                          placeholder: (_, __) => const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                          errorWidget: (_, __, ___) => const Icon(
-                            Icons.broken_image,
-                            color: Colors.white54,
-                            size: 48,
-                          ),
-                        ),
-                      );
-                    },
+          child: PhotoViewerScreen(
+            builders: builders,
+            initialPage: _currentIndex,
+            enableVerticalDismiss: false,
+            showDefaultCloseButton: false,
+            onPageChanged: (index) {
+              setState(() => _currentIndex = index);
+            },
+            onJumpToPage: (jumpToPage) {
+              _jumpToPage = jumpToPage;
+            },
+            overlayBuilder: (context) {
+              return Stack(
+                children: [
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: _CloseButton(
+                      onPressed: () =>
+                          Navigator.of(context).pop(_updatedMemory),
+                    ),
                   ),
-                ),
-              ),
-              Positioned(
-                top: 10,
-                left: 10,
-                child: _CloseButton(
-                  onPressed: () => Navigator.of(context).pop(_updatedMemory),
-                ),
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: _DeleteButton(
-                  onPressed: _isDeleting ? null : _deleteCurrentImage,
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _ThumbnailBar(
-                  data: _data,
-                  currentIndex: _currentIndex,
-                  controller: _controller,
-                  isVisible: _showThumbnails,
-                ),
-              ),
-            ],
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: _DeleteButton(
+                      onPressed: _isDeleting ? null : _deleteCurrentImage,
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _ThumbnailBar(
+                      data: _data,
+                      currentIndex: _currentIndex,
+                      onTap: _jumpToPage,
+                      isVisible: true,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -249,13 +254,13 @@ class _DeleteButton extends StatelessWidget {
 class _ThumbnailBar extends StatelessWidget {
   final List<PreviewData> data;
   final int currentIndex;
-  final PageController controller;
+  final void Function(int)? onTap;
   final bool isVisible;
 
   const _ThumbnailBar({
     required this.data,
     required this.currentIndex,
-    required this.controller,
+    required this.onTap,
     required this.isVisible,
   });
 
@@ -292,11 +297,7 @@ class _ThumbnailBar extends StatelessWidget {
 
                 return GestureDetector(
                   onTap: () {
-                    controller.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOut,
-                    );
+                    onTap?.call(index);
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),

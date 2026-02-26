@@ -20,10 +20,10 @@ class AppStrings {
   // MAIN
   static const String exit = 'Log Out';
   static const String sureExit = "Are you sure you want to log out?";
-  static const String addPlace = 'Add Place';
-  static const String placeName = 'Place Name';
-  static const String addPlaceName = 'Enter place name';
-  static const String deletePlace = 'Delete Record';
+  static const String addMemory = 'Add Memory';
+  static const String memoryName = 'Memory Name';
+  static const String addMemoryName = 'Enter memory name';
+  static const String deleteRecord = 'Delete Record';
   static const String sureDeletePlace = 'Are you sure you want to delete this record?';
   static const String changeRank = 'Change Rank';
 

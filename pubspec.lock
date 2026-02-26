@@ -129,6 +129,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  custom_refresh_indicator:
+    dependency: "direct main"
+    description:
+      name: custom_refresh_indicator
+      sha256: c34dd1dfb1f6b9ee2db9c5972586dba5e4445d79f8431f6ab098a6e963ccd39c
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
   dbus:
     dependency: transitive
     description:
@@ -201,11 +209,27 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  fluid_dialog:
+    dependency: "direct main"
+    description:
+      name: fluid_dialog
+      sha256: "180c8be98efecc7257e1ee337fef9882256eb2b597dc3e0d41db3392b1ccea81"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   flutter:
     dependency: "direct main"
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_appbar:
+    dependency: "direct main"
+    description:
+      name: flutter_appbar
+      sha256: "7baf0d0acef84f698bc1a9a5fb460f20b7677427b20abe8fd546a62b76d5efc5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.9.0"
   flutter_cache_manager:
     dependency: transitive
     description:
@@ -461,6 +485,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.15.0"
+  photo_viewer:
+    dependency: "direct main"
+    description:
+      name: photo_viewer
+      sha256: "16edd1f322e3b768f600e1eb5072168ff92a101dcd64d32fc00a2542e406d552"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  pie_menu:
+    dependency: "direct main"
+    description:
+      name: pie_menu
+      sha256: "8623391adb58efbd8a30ae76227943498c703e5f01d27dc989fbfa28716d1d1c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.4"
   platform:
     dependency: transitive
     description:
@@ -485,22 +525,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.5+1"
-  quiver:
-    dependency: transitive
-    description:
-      name: quiver
-      sha256: ea0b925899e64ecdfbf9c7becb60d5b50e706ade44a85b2363be2a22d88117d2
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.2"
-  responsive_grid_list:
-    dependency: "direct main"
-    description:
-      name: responsive_grid_list
-      sha256: e6cd1754240795cb8b08a4520c9eb5d28856ecf71de5fe6e64535a68c0913563
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.0"
   rxdart:
     dependency: transitive
     description:
@@ -509,6 +533,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  scrolls_to_top:
+    dependency: "direct main"
+    description:
+      name: scrolls_to_top
+      sha256: "8d6684d936b9c1a19c19ee93c836251ae9c803023290762a30cb7657e88e272e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   shared_preferences:
     dependency: "direct main"
     description:

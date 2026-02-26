@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 
 class DeviceHelper {
+  // Resolve a human-readable device name for auth/device tracking.
   static Future<String> getDeviceName() async {
     final deviceInfo = DeviceInfoPlugin();
 

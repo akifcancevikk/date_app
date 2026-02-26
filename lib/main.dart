@@ -10,9 +10,12 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
+  // Ensure Flutter bindings are initialized before async setup.
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize date formatting used across the app.
   await initializeDateFormatting('en_EN', null);
   runApp(
     MultiProvider(
@@ -38,10 +41,12 @@ class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
     super.initState();
+    // Check persisted auth state on first load.
     _checkLogin();
   }
 
   Future<void> _checkLogin() async {
+    // Load token from local storage and validate it with the backend.
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -67,12 +72,14 @@ class _AuthGateState extends State<AuthGate> {
 
   @override
   Widget build(BuildContext context) {
+    // Show a lightweight loading screen while auth state resolves.
     if (_loading) {
       return  Scaffold(
         body: Center(child: Image.asset("assets/images/el.png")),
       );
     }
 
+    // Route to main app when token is valid, otherwise show login.
     if (_token != null &&
         _token!.isNotEmpty &&
         Login.isTokenValid == true) {
@@ -97,6 +104,17 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle.light.copyWith(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          ),
+          child: child,
+        );
+      },
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red.shade800),
