@@ -28,11 +28,13 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final TextEditingController _memoryNameController = TextEditingController();
-  final TextEditingController _memoryNameUpdateController = TextEditingController();
+  final TextEditingController _memoryNameUpdateController =
+      TextEditingController();
   final IndicatorController _refreshController = IndicatorController();
   final ScrollController _scrollController = ScrollController();
   bool isMoreLoading = false;
   bool isLoading = false;
+  bool isDoubleColumnView = false;
 
   @override
   void initState() {
@@ -45,7 +47,8 @@ class _MainPageState extends State<MainPage> {
 
   void _scrollListener() {
     // Trigger pagination when approaching the bottom.
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<MemoryProvider>();
       if (provider.hasNextPage && !isMoreLoading) {
         _loadMore();
@@ -99,115 +102,133 @@ class _MainPageState extends State<MainPage> {
           );
         },
         child: Scaffold(
-          backgroundColor: Colors.black,
-          floatingActionButton: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FloatingActionButton.small(
-                heroTag: "exit",
-                backgroundColor: Colors.red,
-                child: Icon(Icons.exit_to_app),
-                onPressed: () {
-                  showAppFluidDialog<void>(
-                    context: context,
-                    alignment: Alignment.bottomRight,
-                    builder: (context) {
-                      return AppFluidDialog(
-                        title: AppStrings.exit,
-                        content: Text(AppStrings.sureExit),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey),),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              await logout(context);
-                            },
-                            child: Text(
-                              AppStrings.exit,
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-              SizedBox(height: 10),
-              FloatingActionButton(
-                heroTag: "add",
-                backgroundColor: Colors.white,
-                child: Icon(Icons.add, color: Colors.black),
-                onPressed: () {
-                  showAppFluidDialog<void>(
-                    context: context,
-                    alignment: Alignment.bottomRight,
-                    builder: (context) {
-                      return AppFluidDialog(
-                        title: AppStrings.addMemory,
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextField(
-                              controller: _memoryNameController,
-                              decoration: InputDecoration(
-                                labelText: AppStrings.memoryName,
+            backgroundColor: Colors.black,
+            floatingActionButton: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton.small(
+                  heroTag: "exit",
+                  backgroundColor: Colors.red,
+                  child: Icon(Icons.exit_to_app),
+                  onPressed: () {
+                    showAppFluidDialog<void>(
+                      context: context,
+                      alignment: Alignment.bottomRight,
+                      builder: (context) {
+                        return AppFluidDialog(
+                          title: AppStrings.exit,
+                          content: Text(AppStrings.sureExit),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text(
+                                AppStrings.cancel,
+                                style: TextStyle(color: Colors.grey),
                               ),
-                              minLines: 1,
-                              maxLines: 2,
-                              onChanged: (v) => Memory.memoryName = v,
                             ),
-                            SizedBox(height: 20),
-                            RatingBar.builder(
-                              initialRating: 1,
-                              minRating: 1,
-                              itemCount: 5,
-                              itemBuilder: (_, __) =>
-                                  Icon(Icons.star, color: Colors.amber),
-                              onRatingUpdate: (r) =>
-                                  Memory.memoryRating = r.toInt(),
+                            TextButton(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                await logout(context);
+                              },
+                              child: Text(
+                                AppStrings.exit,
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ),
                           ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              _memoryNameController.clear();
-                              Navigator.pop(context);
-                            },
-                            child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey),),
+                        );
+                      },
+                    );
+                  },
+                ),
+                SizedBox(height: 10),
+                FloatingActionButton(
+                  heroTag: "add",
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.add, color: Colors.black),
+                  onPressed: () {
+                    showAppFluidDialog<void>(
+                      context: context,
+                      alignment: Alignment.bottomRight,
+                      builder: (context) {
+                        return AppFluidDialog(
+                          title: AppStrings.addMemory,
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: _memoryNameController,
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.memoryName,
+                                ),
+                                minLines: 1,
+                                maxLines: 2,
+                                onChanged: (v) => Memory.memoryName = v,
+                              ),
+                              SizedBox(height: 20),
+                              RatingBar.builder(
+                                initialRating: 1,
+                                minRating: 1,
+                                itemCount: 5,
+                                itemBuilder: (_, __) =>
+                                    Icon(Icons.star, color: Colors.amber),
+                                onRatingUpdate: (r) =>
+                                    Memory.memoryRating = r.toInt(),
+                              ),
+                            ],
                           ),
-                          TextButton(
-                            onPressed: () async {
-                              await create(context);
-                              _memoryNameController.clear();
-                              Navigator.pop(context);
-                              await fetchMemories(context);
-                            },
-                            child: Text(AppStrings.add, style: TextStyle(color: Colors.green),),
-                          ),
-                        ],
-                      );
-                    },
-                  );
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                _memoryNameController.clear();
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                AppStrings.cancel,
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                await create(context);
+                                _memoryNameController.clear();
+                                Navigator.pop(context);
+                                await fetchMemories(context);
+                              },
+                              child: Text(
+                                AppStrings.add,
+                                style: TextStyle(color: Colors.green),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+            body: globalAppBar(
+              context,
+              false,
+              action: IconButton(
+                onPressed: () {
+                  setState(() => isDoubleColumnView = !isDoubleColumnView);
                 },
+                icon: Icon(
+                  isDoubleColumnView
+                      ? Icons.view_agenda_rounded
+                      : Icons.grid_view_rounded,
+                  color: Colors.white,
+                ),
               ),
-            ],
-        ),
-
-          body: globalAppBar(
-            context, 
-            false,
-            action: SizedBox(),
-            CustomRefreshIndicator(
-              controller: _refreshController,
-              onRefresh: () async {
-                setState(() => isLoading = true);
-                await fetchMemories(context, isRefresh: true);
-                if (!mounted) return;
+              CustomRefreshIndicator(
+                controller: _refreshController,
+                onRefresh: () async {
+                  setState(() => isLoading = true);
+                  await fetchMemories(context, isRefresh: true);
+                  if (!mounted) return;
                   setState(() => isLoading = false);
                 },
                 builder: (context, child, controller) {
@@ -229,7 +250,8 @@ class _MainPageState extends State<MainPage> {
                             child: Container(
                               width: 70,
                               height: 70,
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(100),
@@ -263,375 +285,357 @@ class _MainPageState extends State<MainPage> {
                 },
                 child: Skeletonizer(
                   enabled: isLoading,
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics()
-                    ),
-                    controller: _scrollController,
-                    itemCount: memories.length + (isMoreLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      final memory = memories[index];
-              
-                      // Swipe actions for update (left) and delete (right).
-                      return Dismissible(
-                        key: ValueKey(memory.id),
-                        direction: DismissDirection.horizontal,
-                        confirmDismiss: (direction) async {
-                          if (direction == DismissDirection.endToStart) {
-                            return await showAppFluidDialog<bool>(
-                                  context: context,
-                                  alignment: Alignment.centerRight,
-                                  builder: (context) {
-                                    return AppFluidDialog(
-                                      title: AppStrings.deleteRecord,
-                                      content: Text(AppStrings.sureDeletePlace),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, false),
-                                          child: Text(AppStrings.no, style: TextStyle(color: Colors.grey),),
-                                        ),
-                                        TextButton(
-                                          onPressed: () async {
-                                            await deleteMemory(context, memory.id);
-                                            Navigator.pop(context, true);
-                                          },
-                                          child: Text(
-                                            AppStrings.yes,
-                                            style: TextStyle(color: Colors.red),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ) ??
-                                false;
-                          } else {
-                            MemoryUpdate.memoryId = memory.id;
-                            MemoryUpdate.memoryName = memory.title;
-                            MemoryUpdate.memoryRating = memory.rating;
-                            _memoryNameUpdateController.text = memory.title;
-                            showAppFluidDialog<void>(
-                              context: context,
-                              alignment: Alignment.centerLeft,
-                              builder: (context) {
-                                return AppFluidDialog(
-                                  title: AppStrings.update,
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextField(
-                                        controller:
-                                            _memoryNameUpdateController,
-                                        onChanged: (v) =>
-                                            MemoryUpdate.memoryName = v,
-                                      ),
-                                      SizedBox(height: 20),
-                                      RatingBar.builder(
-                                        initialRating:
-                                            memory.rating.toDouble(),
-                                        itemCount: 5,
-                                        itemBuilder: (_, __) => Icon(
-                                          Icons.star,
-                                          color: Colors.amber,
-                                        ),
-                                        onRatingUpdate: (r) =>
-                                            MemoryUpdate.memoryRating =
-                                                r.toInt(),
-                                      ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context),
-                                      child: Text(AppStrings.cancel, style: TextStyle(color: Colors.grey),),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        await updateMemory(context);
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        AppStrings.update,
-                                        style:
-                                            TextStyle(color: Colors.green),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                            return false;
-                          }
+                  child: _buildMemoriesView(memories),
+                ),
+              ),
+            )),
+      ),
+    );
+  }
+
+  Widget _buildMemoriesView(List memories) {
+    final itemCount = memories.length + (isMoreLoading ? 1 : 0);
+    const physics =
+        AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics());
+
+    if (isDoubleColumnView) {
+      return GridView.builder(
+        physics: physics,
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 0.47,
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (index >= memories.length) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return _buildMemoryItem(memories[index], isTwoColumn: true);
+        },
+      );
+    }
+
+    return ListView.builder(
+      physics: physics,
+      controller: _scrollController,
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        if (index >= memories.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildMemoryItem(memories[index], isTwoColumn: false);
+      },
+    );
+  }
+
+  Widget _buildMemoryItem(dynamic memory, {required bool isTwoColumn}) {
+    final imageWidth = isTwoColumn ? double.infinity : 280.0;
+    final imageHeight = isTwoColumn ? 240.0 : 400.0;
+    final titleFontSize = isTwoColumn ? 16.0 : 20.0;
+    final bottomSpace = isTwoColumn ? 16.0 : 50.0;
+
+    return Dismissible(
+      key: ValueKey(memory.id),
+      direction: DismissDirection.horizontal,
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          return await showAppFluidDialog<bool>(
+                context: context,
+                alignment: Alignment.centerRight,
+                builder: (context) {
+                  return AppFluidDialog(
+                    title: AppStrings.deleteRecord,
+                    content: Text(AppStrings.sureDeletePlace),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text(AppStrings.no,
+                            style: TextStyle(color: Colors.grey)),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          await deleteMemory(context, memory.id);
+                          Navigator.pop(context, true);
                         },
-                        background: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade700,
-                            borderRadius: BorderRadius.circular(20)
-                          ),
-                          alignment: Alignment.centerLeft,
-                          padding: EdgeInsets.only(left: 20),
-                          child: Icon(Icons.update, color: Colors.white),
+                        child: Text(AppStrings.yes,
+                            style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  );
+                },
+              ) ??
+              false;
+        }
+
+        MemoryUpdate.memoryId = memory.id;
+        MemoryUpdate.memoryName = memory.title;
+        MemoryUpdate.memoryRating = memory.rating;
+        _memoryNameUpdateController.text = memory.title;
+        showAppFluidDialog<void>(
+          context: context,
+          alignment: Alignment.centerLeft,
+          builder: (context) {
+            return AppFluidDialog(
+              title: AppStrings.update,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _memoryNameUpdateController,
+                    onChanged: (v) => MemoryUpdate.memoryName = v,
+                  ),
+                  SizedBox(height: 20),
+                  RatingBar.builder(
+                    initialRating: memory.rating.toDouble(),
+                    itemCount: 5,
+                    itemBuilder: (_, __) =>
+                        Icon(Icons.star, color: Colors.amber),
+                    onRatingUpdate: (r) =>
+                        MemoryUpdate.memoryRating = r.toInt(),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(AppStrings.cancel,
+                      style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await updateMemory(context);
+                    Navigator.pop(context);
+                  },
+                  child: Text(AppStrings.update,
+                      style: TextStyle(color: Colors.green)),
+                ),
+              ],
+            );
+          },
+        );
+        return false;
+      },
+      background: Container(
+        decoration: BoxDecoration(
+          color: Colors.green.shade700,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.only(left: 20),
+        child: Icon(Icons.update, color: Colors.white),
+      ),
+      secondaryBackground: Container(
+        decoration: BoxDecoration(
+          color: Colors.red.shade700,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: 20),
+        child: Icon(Icons.delete, color: Colors.white),
+      ),
+      child: PieMenu(
+        actions: [
+          PieAction(
+            tooltip: Text(""),
+            onSelect: () {
+              MemoryUpdate.memoryId = memory.id;
+              MemoryUpdate.memoryName = memory.title;
+              MemoryUpdate.memoryRating = memory.rating;
+              _memoryNameUpdateController.text = memory.title;
+              showAppFluidDialog<void>(
+                context: context,
+                alignment: Alignment.centerLeft,
+                builder: (context) {
+                  return AppFluidDialog(
+                    title: AppStrings.update,
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: _memoryNameUpdateController,
+                          onChanged: (v) => MemoryUpdate.memoryName = v,
                         ),
-                        secondaryBackground: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade700,
-                            borderRadius: BorderRadius.circular(20)
-                          ),
-                          alignment: Alignment.centerRight,
-                          padding: EdgeInsets.only(right: 20),
-                          child: Icon(Icons.delete, color: Colors.white),
+                        SizedBox(height: 20),
+                        RatingBar.builder(
+                          initialRating: memory.rating.toDouble(),
+                          itemCount: 5,
+                          itemBuilder: (_, __) =>
+                              Icon(Icons.star, color: Colors.amber),
+                          onRatingUpdate: (r) =>
+                              MemoryUpdate.memoryRating = r.toInt(),
                         ),
-                        child: PieMenu(
-                          actions: [
-                            PieAction(
-                              tooltip: Text(""),
-                              onSelect: () {
-                                MemoryUpdate.memoryId = memory.id;
-                                MemoryUpdate.memoryName = memory.title;
-                                MemoryUpdate.memoryRating = memory.rating;
-                                _memoryNameUpdateController.text = memory.title;
-                                showAppFluidDialog<void>(
-                                  context: context,
-                                  alignment: Alignment.centerLeft,
-                                  builder: (context) {
-                                    return AppFluidDialog(
-                                      title: AppStrings.update,
-                                      content: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          TextField(
-                                            controller:
-                                                _memoryNameUpdateController,
-                                            onChanged: (v) =>
-                                                MemoryUpdate.memoryName = v,
-                                          ),
-                                          SizedBox(height: 20),
-                                          RatingBar.builder(
-                                            initialRating:
-                                                memory.rating.toDouble(),
-                                            itemCount: 5,
-                                            itemBuilder: (_, __) => Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
-                                            ),
-                                            onRatingUpdate: (r) =>
-                                                MemoryUpdate.memoryRating =
-                                                    r.toInt(),
-                                          ),
-                                        ],
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: Text(AppStrings.cancel),
-                                        ),
-                                        TextButton(
-                                          onPressed: () async {
-                                            await updateMemory(context);
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text(
-                                            AppStrings.update,
-                                            style: TextStyle(
-                                                color: Colors.green),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              child: Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade700,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.update,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            PieAction(
-                              tooltip: Text(""),
-                              onSelect: () async {
-                                final confirm = await showAppFluidDialog<bool>(
-                                      context: context,
-                                      alignment: Alignment.centerRight,
-                                      builder: (context) {
-                                        return AppFluidDialog(
-                                          title: AppStrings.deleteRecord,
-                                          content: Text(AppStrings.sureDeletePlace),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(
-                                                      context, false),
-                                              child: Text(AppStrings.no),
-                                            ),
-                                            TextButton(
-                                              onPressed: () async {
-                                                await deleteMemory(
-                                                    context, memory.id);
-                                                Navigator.pop(
-                                                    context, true);
-                                              },
-                                              child: Text(
-                                                AppStrings.yes,
-                                                style: TextStyle(
-                                                    color: Colors.red),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ) ??
-                                    false;
-                                if (!confirm) return;
-                              },
-                              child: Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  color: Colors.red.shade700,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(context, CupertinoPageRoute(builder: (context) => DetailPage(memory: memory,),));
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(AppStrings.cancel),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          await updateMemory(context);
+                          Navigator.pop(context);
+                        },
+                        child: Text(AppStrings.update,
+                            style: TextStyle(color: Colors.green)),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                  color: Colors.green.shade700, shape: BoxShape.circle),
+              child: const Icon(Icons.update, color: Colors.white),
+            ),
+          ),
+          PieAction(
+            tooltip: Text(""),
+            onSelect: () async {
+              final confirm = await showAppFluidDialog<bool>(
+                    context: context,
+                    alignment: Alignment.centerRight,
+                    builder: (context) {
+                      return AppFluidDialog(
+                        title: AppStrings.deleteRecord,
+                        content: Text(AppStrings.sureDeletePlace),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text(AppStrings.no),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              await deleteMemory(context, memory.id);
+                              Navigator.pop(context, true);
                             },
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Container(
-                                width: ScreenHelper.screenWidth(context),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: 280,
-                                      child: Text(
-                                        memory.title,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Text(
-                                      GlobalDateFormat.formatDate(
-                                          memory.createdAt.toString()),
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    RatingBar.builder(
-                                      itemSize: 20,
-                                      initialRating:
-                                          memory.rating.toDouble(),
-                                      allowHalfRating: false,
-                                      itemCount: 5,
-                                      itemBuilder: (_, __) => Icon(
-                                        Icons.star,
-                                        color: Colors.amber,
-                                      ),
-                                      onRatingUpdate: (_) {},
-                                    ),
-                                    SizedBox(height: 10),
-                                    Container(
-                                      width: 280,
-                                      height: 400,
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          top: BorderSide(
-                                              color: Colors.white,
-                                              width: 10),
-                                          left: BorderSide(
-                                              color: Colors.white,
-                                              width: 10),
-                                          right: BorderSide(
-                                              color: Colors.white,
-                                              width: 10),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            child: CachedNetworkImage(
-                                              imageUrl:
-                                                  memory.paths.isEmpty
-                                                      ? "https://mobiledocs.aktekweb.com/places/bos.jpg"
-                                                      : "${Url.memories}memories/${memory.id}/image/${memory.paths.first}",
-                                              httpHeaders: {
-                                                "Authorization":
-                                                    "Bearer ${Login.userToken}",
-                                                "Accept":
-                                                    "application/json",
-                                              },
-                                              fit: BoxFit.cover,
-                                              placeholder: (_, __) =>
-                                                  const Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                              errorWidget:
-                                                  (_, __, ___) =>
-                                                      const Icon(
-                                                Icons.error,
-                                                color: Colors.red,
-                                              ),
-                                            )
-                                          ),
-                                          Container(
-                                            height: 40,
-                                            color: Colors.white,
-                                            width: double.infinity,
-                                            alignment: Alignment.center,
-                                            padding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: 8),
-                                            child: Text(
-                                              memory.title,
-                                              style: TextStyle(
-                                                  fontWeight:
-                                                      FontWeight.bold),
-                                              maxLines: 1,
-                                              overflow:
-                                                  TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 50,)
-                                  ],
-                                ),
-                              ),
-                            ),
+                            child: Text(AppStrings.yes,
+                                style: TextStyle(color: Colors.red)),
                           ),
-                        ),
+                        ],
                       );
                     },
-                  ),
-                ),
+                  ) ??
+                  false;
+              if (!confirm) return;
+            },
+            child: Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                  color: Colors.red.shade700, shape: BoxShape.circle),
+              child: const Icon(Icons.delete, color: Colors.white),
             ),
-          )
-          
+          ),
+        ],
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              CupertinoPageRoute(
+                  builder: (context) => DetailPage(memory: memory)),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Container(
+              width: isTwoColumn
+                  ? double.infinity
+                  : ScreenHelper.screenWidth(context),
+              decoration:
+                  BoxDecoration(borderRadius: BorderRadius.circular(15)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: imageWidth,
+                    child: Text(
+                      memory.title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: titleFontSize,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    GlobalDateFormat.formatDate(memory.createdAt.toString()),
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  RatingBar.builder(
+                    itemSize: isTwoColumn ? 16 : 20,
+                    initialRating: memory.rating.toDouble(),
+                    allowHalfRating: false,
+                    itemCount: 5,
+                    itemBuilder: (_, __) =>
+                        Icon(Icons.star, color: Colors.amber),
+                    onRatingUpdate: (_) {},
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    width: imageWidth,
+                    height: imageHeight,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: Colors.white, width: 10),
+                        left: BorderSide(color: Colors.white, width: 10),
+                        right: BorderSide(color: Colors.white, width: 10),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: CachedNetworkImage(
+                            imageUrl: memory.paths.isEmpty
+                                ? "https://mobiledocs.aktekweb.com/places/bos.jpg"
+                                : "${Url.memories}memories/${memory.id}/image/${memory.paths.first}",
+                            httpHeaders: {
+                              "Authorization": "Bearer ${Login.userToken}",
+                              "Accept": "application/json",
+                            },
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            errorWidget: (_, __, ___) => const Icon(
+                              Icons.error,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 40,
+                          color: Colors.white,
+                          width: double.infinity,
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            memory.title,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: bottomSpace),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
