@@ -8,11 +8,13 @@ SafeArea globalAppBar(
   dynamic secondaryAppBar,
   bool showSearch = false,
   VoidCallback? onSearchTap,
-  dynamic action
+  dynamic action,
+  NestedScrollController? scrollController,
 }) {
   return SafeArea(
     bottom: false,
     child: AppBarConnection(
+      scrollController: scrollController,
       appBars: [
         AppBar(
           maxExtent: 60,

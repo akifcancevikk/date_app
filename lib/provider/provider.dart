@@ -20,11 +20,11 @@ class MemoryProvider extends ChangeNotifier {
   }
 
   // Reset paging and cached memories.
-  void clear() {
+  void clear({bool notify = true}) {
     _memories = [];
     _currentPage = 1;
     _hasNextPage = true;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
   
   // Remove a memory by id.

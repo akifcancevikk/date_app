@@ -24,7 +24,12 @@ Future<void> login(BuildContext context) async {
       await prefs.setString('email', userData['email']);
       Login.userToken = userData['token'];
       Login.email = userData['email'];
-      Navigator.push(context,CupertinoPageRoute(builder: (context) => const MainPage()),
+      if (!context.mounted) return;
+      context.read<MemoryProvider>().clear(notify: false);
+      Navigator.pushAndRemoveUntil(
+        context,
+        CupertinoPageRoute(builder: (context) => const MainPage()),
+        (route) => false,
       );
   } else {
     var userData = json.decode(response.body);
@@ -58,6 +63,7 @@ Future<void> checkUser(BuildContext context) async {
 // Clear local session and return to login screen.
 Future<void> logout(BuildContext context) async {
   var response = await Api.logout();
+  if (!context.mounted) return;
   if (response.statusCode == 200) {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
@@ -65,9 +71,12 @@ Future<void> logout(BuildContext context) async {
     Login.userName = null;
     Login.email = null;
     Login.userToken = null;
+    context.read<MemoryProvider>().clear(notify: false);
+    if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(context, CupertinoPageRoute(builder: (context) => const LoginPage(),), (route) => false,);
   } else {
     var userData = json.decode(response.body);
+    if (!context.mounted) return;
     errorMessage(context, "${userData['message']}");
   }
 }
@@ -76,7 +85,7 @@ Future<void> logout(BuildContext context) async {
 Future<void> fetchMemories(BuildContext context, {bool isRefresh = false}) async {
   final provider = context.read<MemoryProvider>();
   
-  if (isRefresh) provider.clear();
+  if (isRefresh) provider.clear(notify: false);
 
   var response = await Api.getMemories(page: provider.currentPage);
 
