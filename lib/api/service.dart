@@ -160,6 +160,22 @@ Future<MemoryModel?> updateNote(
   }
 }
 
+// Update notes for a memory and return updated model.
+Future<MemoryModel?> updateDetail(
+  BuildContext context,
+  int id,
+  List<String> notes,
+) async {
+  final response = await Api.updateNote(id, notes);
+
+  if (response.statusCode >= 200 && response.statusCode < 300) {
+    final jsonBody = jsonDecode(response.body);
+    return MemoryModel.fromJson(jsonBody['data']);
+  } else {
+    return null;
+  }
+}
+
 // Upload images for a memory and return updated model.
 Future<MemoryModel?> updateImage(
   BuildContext context,

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:date_app/api/service.dart';
 import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/variables.dart';
@@ -30,6 +31,7 @@ class DetailPage extends StatefulWidget {
 class _DetailPageState extends State<DetailPage> {
   bool isUploading = false;
   final TextEditingController noteController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   final List<PreviewData> dataList = [];
 
@@ -74,6 +76,7 @@ class _DetailPageState extends State<DetailPage> {
       );
     }).toList();
 
+    if (!mounted) return;
     setState(() {
       dataList
         ..clear()
@@ -147,6 +150,35 @@ class _DetailPageState extends State<DetailPage> {
       noteController.clear();
       successMessage(context, AppStrings.noteAdded);
     }
+  }
+
+  // Pull-to-refresh: re-sync current note set and refresh local data.
+  Future<void> _refreshDetail() async {
+    final updatedMemory = await updateDetail(
+      context,
+      widget.memory.id,
+      List<String>.from(widget.memory.notes),
+    );
+
+    if (!mounted || updatedMemory == null) return;
+
+    setState(() {
+      widget.memory.paths
+        ..clear()
+        ..addAll(updatedMemory.paths);
+      widget.memory.notes
+        ..clear()
+        ..addAll(updatedMemory.notes);
+    });
+
+    await _buildPreviewList();
+  }
+
+  @override
+  void dispose() {
+    noteController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -224,14 +256,65 @@ class _DetailPageState extends State<DetailPage> {
                 ),
               ],
             ),
-          body: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            body: CustomRefreshIndicator(
+              builder: (context, child, controller) {
+                final value = controller.value.clamp(0.0, 1.0);
+                final indicatorLoading = controller.state.isLoading;
+                final topInset = MediaQuery.of(context).padding.top;
+                return Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    child,
+                    Positioned(
+                      top: topInset + 8,
+                      child: Opacity(
+                        opacity: indicatorLoading ? 1.0 : value,
+                        child: Transform.scale(
+                          scale:
+                              indicatorLoading ? 1.0 : (0.5 + (0.5 * value)),
+                          child: Container(
+                            width: 70,
+                            height: 70,
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(100),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+              onRefresh: _refreshDetail,
+              child: ListView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
                 children: [
-                  // Notes list
                   ...widget.memory.notes.map(
                     (note) => Padding(
                       padding: const EdgeInsets.all(8),
@@ -245,10 +328,11 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Column(
-                    children: dataList.map((preview) {
-                      final i = dataList.indexOf(preview);
-                      return PieMenu(
+                  ...dataList.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final preview = entry.value;
+                    return Center(
+                      child: PieMenu(
                         actions: [
                           PieAction(
                             tooltip: Text(""),
@@ -265,7 +349,6 @@ class _DetailPageState extends State<DetailPage> {
                               );
 
                               if (!mounted) return;
-
                               if (updatedMemory == null) return;
 
                               setState(() {
@@ -305,7 +388,6 @@ class _DetailPageState extends State<DetailPage> {
                             );
 
                             if (!mounted) return;
-
                             if (result is MemoryModel) {
                               setState(() {
                                 widget.memory.paths
@@ -319,55 +401,51 @@ class _DetailPageState extends State<DetailPage> {
                               await _buildPreviewList();
                             }
                           },
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Container(
-                              width: 280,
-                              height: 400,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border(
-                                  top: BorderSide(
-                                      color: Colors.white, width: 10),
-                                  left: BorderSide(
-                                      color: Colors.white, width: 10),
-                                  right: BorderSide(
-                                      color: Colors.white, width: 10),
-                                  bottom: BorderSide(
-                                      color: Colors.white, width: 45),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color:
-                                        Colors.black.withValues(alpha: 0.4),
-                                    blurRadius: 12,
-                                    offset: Offset(0, 6),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Container(
+                                width: 280,
+                                height: 400,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border(
+                                    top: BorderSide(color: Colors.white, width: 10),
+                                    left: BorderSide(color: Colors.white, width: 10),
+                                    right: BorderSide(color: Colors.white, width: 10),
+                                    bottom: BorderSide(color: Colors.white, width: 45),
                                   ),
-                                ],
-                              ),
-                              child: CachedNetworkImage(
-                                imageUrl: preview.image!.url!,
-                                httpHeaders: {
-                                  "Authorization": "Bearer ${Login.userToken}",
-                                  "Accept": "application/json",
-                                },
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => const SizedBox(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.4),
+                                      blurRadius: 12,
+                                      offset: Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: CachedNetworkImage(
+                                  imageUrl: preview.image!.url!,
+                                  httpHeaders: {
+                                    "Authorization": "Bearer ${Login.userToken}",
+                                    "Accept": "application/json",
+                                  },
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => const SizedBox(
                                     height: 200,
-                                    child: Center(
-                                        child:
-                                            CircularProgressIndicator())),
-                                errorWidget: (_, __, ___) =>
-                                    const Icon(Icons.error,
-                                        color: Colors.red),
+                                    child: Center(child: CircularProgressIndicator()),
+                                  ),
+                                  errorWidget: (_, __, ___) =>
+                                      const Icon(Icons.error, color: Colors.red),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                  SizedBox(height: 100,)
+                      ),
+                    );
+                  }),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
