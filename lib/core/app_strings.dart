@@ -59,5 +59,10 @@ class AppStrings {
   static const String noteAdded = 'Note added';
   static const String imageAdded = 'Image added';
   static const String deleted = 'Record deleted';
+  static const String loginError = 'No internet and no cached login found.';
+  static const String deleteFailed = 'Delete failed.';
+  static const String updateFailed = 'Update failed.';
+  static const String createFailed = 'Create failed.';
+  static const String logoutFailed = 'Logout failed.';
 
 }

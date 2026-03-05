@@ -1,14 +1,14 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, use_build_context_synchronously
 
+import 'dart:io';
 import 'package:date_app/api/service.dart';
 import 'package:date_app/global/variables.dart';
-import 'package:date_app/views/login_page.dart';
-import 'package:date_app/views/main_page.dart';
-import 'package:date_app/provider/provider.dart';
+import 'package:date_app/pages/login_page.dart';
+import 'package:date_app/pages/main_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
@@ -18,12 +18,7 @@ void main() async {
   // Initialize date formatting used across the app.
   await initializeDateFormatting('en_EN', null);
   runApp(
-    MultiProvider(
-      providers: [
-      ChangeNotifierProvider(create: (_) => MemoryProvider()),
-      ],
-      child: const MyApp(),
-    )
+    const ProviderScope(child: MyApp()),
   );
 }
 
@@ -37,6 +32,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   String? _token;
   bool _loading = true;
+  bool _canOpenMain = false;
 
   @override
   void initState() {
@@ -56,11 +52,21 @@ class _AuthGateState extends State<AuthGate> {
       if (!mounted) return;
       setState(() {
         _token = null;
+        _canOpenMain = false;
         _loading = false;
       });
       return;
     }
-    await checkUser(context);
+
+    final hasInternet = await _hasInternetConnection();
+
+    if (hasInternet) {
+      await checkUser(context);
+      _canOpenMain = Login.isTokenValid == true;
+    } else {
+      // Offline mode: if token exists locally, allow entering app.
+      _canOpenMain = true;
+    }
 
     if (!mounted) return;
 
@@ -70,19 +76,26 @@ class _AuthGateState extends State<AuthGate> {
     });
   }
 
+  Future<bool> _hasInternetConnection() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+    } on SocketException {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Show a lightweight loading screen while auth state resolves.
     if (_loading) {
       return  Scaffold(
+        backgroundColor: Colors.white,
         body: Center(child: Image.asset("assets/images/el.png")),
       );
     }
 
     // Route to main app when token is valid, otherwise show login.
-    if (_token != null &&
-        _token!.isNotEmpty &&
-        Login.isTokenValid == true) {
+    if (_token != null && _token!.isNotEmpty && _canOpenMain) {
       return const MainPage();
     }
 

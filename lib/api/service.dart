@@ -6,52 +6,177 @@ import 'package:date_app/api/api.dart';
 import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/models/memory_model.dart';
-import 'package:date_app/views/login_page.dart';
-import 'package:date_app/views/main_page.dart';
-import 'package:date_app/provider/provider.dart';
+import 'package:date_app/pages/login_page.dart';
+import 'package:date_app/pages/main_page.dart';
+import 'package:date_app/providers/memory_provider.dart';
 import 'package:date_app/widgets/show_dialogs/show_info.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+class _ApiCallResult {
+  final int statusCode;
+  final Map<String, dynamic> body;
+  final bool fromCache;
+
+  _ApiCallResult({
+    required this.statusCode,
+    required this.body,
+    required this.fromCache,
+  });
+}
+
+String _cacheScope() {
+  return Login.email ?? LoginVariables.email ?? "guest";
+}
+
+String _cacheKey(String endpoint) {
+  return "${_cacheScope()}::$endpoint";
+}
+
+Map<String, dynamic> _decodeBodyMap(String raw) {
+  if (raw.trim().isEmpty) return {"ok": true};
+  final decoded = jsonDecode(raw);
+  if (decoded is Map<String, dynamic>) return decoded;
+  return {"data": decoded};
+}
+
+String _extractMessage(Map<String, dynamic> body, {String fallback = "Error"}) {
+  final msg = body['message'];
+  if (msg is String && msg.isNotEmpty) return msg;
+  return fallback;
+}
+
+Future<_ApiCallResult?> _callJsonWithCache({
+  required String endpoint,
+  required Future<http.Response> Function() call,
+}) async {
+  try {
+    final response = await call();
+    final body = _decodeBodyMap(response.body);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      await CacheService.save(_cacheKey(endpoint), body);
+    }
+
+    return _ApiCallResult(
+      statusCode: response.statusCode,
+      body: body,
+      fromCache: false,
+    );
+  } catch (_) {
+    final cached = await CacheService.load(_cacheKey(endpoint));
+    if (cached is Map<String, dynamic>) {
+      return _ApiCallResult(statusCode: 200, body: cached, fromCache: true);
+    }
+    return null;
+  }
+}
+
+Future<_ApiCallResult?> _callStreamWithCache({
+  required String endpoint,
+  required Future<http.StreamedResponse> Function() call,
+}) async {
+  try {
+    final streamedResponse = await call();
+    final rawBody = await streamedResponse.stream.bytesToString();
+    final body = _decodeBodyMap(rawBody);
+
+    if (streamedResponse.statusCode >= 200 &&
+        streamedResponse.statusCode < 300) {
+      await CacheService.save(_cacheKey(endpoint), body);
+    }
+
+    return _ApiCallResult(
+      statusCode: streamedResponse.statusCode,
+      body: body,
+      fromCache: false,
+    );
+  } catch (_) {
+    final cached = await CacheService.load(_cacheKey(endpoint));
+    if (cached is Map<String, dynamic>) {
+      return _ApiCallResult(statusCode: 200, body: cached, fromCache: true);
+    }
+    return null;
+  }
+}
 
 // Handle login flow and persist token on success.
 Future<void> login(BuildContext context) async {
-  var response = await Api.login(LoginVariables.email!, LoginVariables.password!);
-  if (response.statusCode == 200) {
-    var userData = json.decode(response.body);
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', userData['token']);
-      await prefs.setString('email', userData['email']);
-      Login.userToken = userData['token'];
-      Login.email = userData['email'];
-      if (!context.mounted) return;
-      context.read<MemoryProvider>().clear(notify: false);
-      Navigator.pushAndRemoveUntil(
-        context,
-        CupertinoPageRoute(builder: (context) => const MainPage()),
-        (route) => false,
-      );
+  final result = await _callJsonWithCache(
+    endpoint: "auth/login/${LoginVariables.email}",
+    call: () => Api.login(LoginVariables.email!, LoginVariables.password!),
+  );
+
+  if (result == null) {
+    errorMessage(context, AppStrings.loginError);
+    return;
+  }
+
+  if (result.statusCode == 200) {
+    final userData = result.body;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', userData['token'] ?? '');
+    await prefs.setString(
+        'email', userData['email'] ?? LoginVariables.email ?? '');
+    Login.userToken = userData['token'];
+    Login.email = userData['email'] ?? LoginVariables.email;
+    if (!context.mounted) return;
+    Login.isTokenValid = true;
+    Navigator.pushAndRemoveUntil(
+      context,
+      CupertinoPageRoute(builder: (context) => const MainPage()),
+      (route) => false,
+    );
   } else {
-    var userData = json.decode(response.body);
-    errorMessage(context, "${userData['message']}");
+    errorMessage(context, _extractMessage(result.body));
   }
 }
 
 // Handle user registration flow.
 Future<void> register(BuildContext context) async {
-  var response = await Api.register(RegisterVariables.email!, RegisterVariables.password!, RegisterVariables.passwordConfirmation!, RegisterVariables.name!);
-  if (response.statusCode == 200) {
-    Navigator.pushAndRemoveUntil(context, CupertinoPageRoute(builder: (context) => const LoginPage(),), (route) => false,);
+  final result = await _callJsonWithCache(
+    endpoint: "auth/register/${RegisterVariables.email}",
+    call: () => Api.register(
+      RegisterVariables.email!,
+      RegisterVariables.password!,
+      RegisterVariables.passwordConfirmation!,
+      RegisterVariables.name!,
+    ),
+  );
+
+  if (result == null) {
+    errorMessage(context, AppStrings.loginError);
+    return;
+  }
+
+  if (result.statusCode == 200) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => const LoginPage(),
+      ),
+      (route) => false,
+    );
   } else {
-    var userData = json.decode(response.body);
-    errorMessage(context, "${userData['message']}");
+    errorMessage(context, _extractMessage(result.body));
   }
 }
 
 // Validate stored token and mark auth state.
 Future<void> checkUser(BuildContext context) async {
-  var response = await Api.checkUser();
-  if (response.statusCode == 200) {
+  final result = await _callJsonWithCache(
+    endpoint: "user/check",
+    call: Api.checkUser,
+  );
+
+  if (result == null) {
+    Login.isTokenValid = false;
+    return;
+  }
+
+  if (result.statusCode == 200) {
     Login.isTokenValid = true;
   } else {
     Login.isTokenValid = false;
@@ -61,157 +186,243 @@ Future<void> checkUser(BuildContext context) async {
 }
 
 // Clear local session and return to login screen.
-Future<void> logout(BuildContext context) async {
-  var response = await Api.logout();
+Future<void> logout(BuildContext context, WidgetRef ref) async {
+  final result = await _callJsonWithCache(
+    endpoint: "auth/logout",
+    call: Api.logout,
+  );
+
   if (!context.mounted) return;
-  if (response.statusCode == 200) {
+  if (result != null && result.statusCode == 200) {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('email');
     Login.userName = null;
     Login.email = null;
     Login.userToken = null;
-    context.read<MemoryProvider>().clear(notify: false);
+    ref.read(memoriesProvider.notifier).reset();
     if (!context.mounted) return;
-    Navigator.pushAndRemoveUntil(context, CupertinoPageRoute(builder: (context) => const LoginPage(),), (route) => false,);
+    Navigator.pushAndRemoveUntil(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => const LoginPage(),
+      ),
+      (route) => false,
+    );
   } else {
-    var userData = json.decode(response.body);
     if (!context.mounted) return;
-    errorMessage(context, "${userData['message']}");
+    errorMessage(
+        context,
+        result == null
+            ? AppStrings.logoutFailed
+            : _extractMessage(result.body));
   }
 }
 
-// Fetch paginated memories and append to provider.
-Future<void> fetchMemories(BuildContext context, {bool isRefresh = false}) async {
-  final provider = context.read<MemoryProvider>();
-  
-  if (isRefresh) provider.clear(notify: false);
+Future<void> fetchMemories(WidgetRef ref, {bool isRefresh = false}) async {
+  final notifier = ref.read(memoriesProvider.notifier);
+  final s = ref.read(memoriesProvider);
 
-  var response = await Api.getMemories(page: provider.currentPage);
+  if (isRefresh) {
+    notifier.reset();
+  } else {
+    if (!s.hasNextPage || s.isLoadingMore) return;
+    notifier.setLoadingMore(true);
+  }
+
+  final page = isRefresh ? 1 : ref.read(memoriesProvider).currentPage;
+  final response = await Api.getMemories(page: page);
 
   if (response.statusCode == 200) {
-    final body = json.decode(response.body);
-    final List list = body['data']['data'];
-    final memories = list.map((e) => MemoryModel.fromJson(e)).toList();
-    bool hasNext = body['data']['next_page_url'] != null;
-    
-    provider.addMemories(memories, hasNext);
-  }
-}
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final list = (body['data']['data'] as List)
+        .map((e) => MemoryModel.fromJson(e))
+        .toList();
 
-// Create a new memory and insert it into the list.
-Future<void> create(BuildContext context) async {
-  var response = await Api.create(Memory.memoryName!, Memory.memoryRating!);
-  if (response.statusCode >= 200 && response.statusCode < 300) {
-    final body = json.decode(response.body);
-    final newMemory = MemoryModel.fromJson(body['data']);
-    context.read<MemoryProvider>().addMemory(newMemory);
-    successMessage(context, AppStrings.placeAdded);
+    final hasNext = body['data']['next_page_url'] != null;
+
+    if (isRefresh) {
+      notifier.setFirstPage(list, hasNext);
+    } else {
+      notifier.appendPage(list, hasNext);
+    }
   } else {
-    var userData = json.decode(response.body);
-    errorMessage(context, "${userData['message']}");
+    notifier.setLoadingMore(false);
   }
 }
 
-// Update an existing memory and refresh it in the list.
-Future<void> updateMemory(BuildContext context) async {
-  final response = await Api.updateMemory(
-    MemoryUpdate.memoryName!,
-    MemoryUpdate.memoryRating!,
-    MemoryUpdate.memoryId!,
+Future<void> createMemory(BuildContext context, WidgetRef ref) async {
+  final title = Memory.memoryName?.trim();
+  final rating = Memory.memoryRating;
+
+  if (title == null || title.isEmpty || rating == null) {
+    errorMessage(context, AppStrings.createFailed);
+    return;
+  }
+
+  final result = await _callJsonWithCache(
+    endpoint: "memories/create",
+    call: () => Api.create(title, rating),
   );
 
-  if (response.statusCode >= 200 && response.statusCode < 300) {
-    final body = json.decode(response.body);
-    final updatedMemory = MemoryModel.fromJson(body['data']);
-    context.read<MemoryProvider>().updateMemory(updatedMemory);
-  } else {
-    final userData = json.decode(response.body);
-    errorMessage(context, userData['message']);
+  if (result != null && result.statusCode >= 200 && result.statusCode < 300) {
+    final body = result.body;
+    final data = body['data'];
+    if (data is Map<String, dynamic>) {
+      final newMemory = MemoryModel.fromJson(data);
+      ref.read(memoriesProvider.notifier).addMemory(newMemory);
+      if (!result.fromCache) {
+        successMessage(context, AppStrings.placeAdded);
+      }
+      return;
+    }
   }
+
+  errorMessage(
+    context,
+    result == null ? AppStrings.createFailed : _extractMessage(result.body),
+  );
 }
 
-// Delete a memory and remove it from the list.
-Future<void> deleteMemory(BuildContext context, int id) async {
-  var response = await Api.deleteMemory(id);
-  if (response.statusCode >= 200 && response.statusCode < 300) {
-    context.read<MemoryProvider>().removeMemoryById(id);
-  } else {
-    var userData = json.decode(response.body);
-    errorMessage(context, "${userData['message']}");
+Future<void> updateMemory(BuildContext context, WidgetRef ref) async {
+  final id = MemoryUpdate.memoryId;
+  final title = MemoryUpdate.memoryName?.trim();
+  final rating = MemoryUpdate.memoryRating;
+
+  if (id == null || title == null || title.isEmpty || rating == null) {
+    errorMessage(context, AppStrings.updateFailed);
+    return;
   }
+
+  final result = await _callJsonWithCache(
+    endpoint: "memories/update/$id",
+    call: () => Api.updateMemory(title, rating, id),
+  );
+
+  if (result != null && result.statusCode >= 200 && result.statusCode < 300) {
+    final body = result.body;
+    final data = body['data'];
+    if (data is Map<String, dynamic>) {
+      final updatedMemory = MemoryModel.fromJson(data);
+      ref.read(memoriesProvider.notifier).updateMemory(updatedMemory);
+      return;
+    }
+  }
+
+  errorMessage(
+    context,
+    result == null ? AppStrings.updateFailed : _extractMessage(result.body),
+  );
 }
 
-// Update notes for a memory and return updated model.
-Future<MemoryModel?> updateNote(
-  BuildContext context,
-  int id,
-  List<String> notes,
-) async {
-  final response = await Api.updateNote(id, notes);
+Future<void> deleteMemory( BuildContext context, WidgetRef ref, int id) async {
+  final result = await _callJsonWithCache(
+    endpoint: "memories/delete/$id",
+    call: () => Api.deleteMemory(id),
+  );
 
-  if (response.statusCode >= 200 && response.statusCode < 300) {
-    final jsonBody = jsonDecode(response.body);
-    return MemoryModel.fromJson(jsonBody['data']);
+  if (result != null && result.statusCode >= 200 && result.statusCode < 300) {
+    final body = result.body;
+    final data = body['data'];
+    final deletedId = data is Map<String, dynamic> ? data['id'] as int? : null;
+    ref.read(memoriesProvider.notifier).removeMemoryById(deletedId ?? id);
+    return;
+  }
+
+  errorMessage(
+    context,
+    result == null ? AppStrings.deleteFailed : _extractMessage(result.body),
+  );
+}
+
+Future<MemoryModel?> updateNote(BuildContext context, WidgetRef ref, int id, List<String> notes,) async {
+  final result = await _callJsonWithCache(
+    endpoint: "memories/$id/notes/update",
+    call: () => Api.updateNote(id, notes),
+  );
+
+  if (result != null && result.statusCode >= 200 && result.statusCode < 300) {
+    final updatedMemory = MemoryModel.fromJson(result.body['data']);
+    ref.read(memoriesProvider.notifier).updateMemory(updatedMemory);
+    return updatedMemory;
   } else {
-    final userData = json.decode(response.body);
-    errorMessage(context, userData['message'] ?? 'Error');
+    if (result != null) {
+      errorMessage(context, _extractMessage(result.body));
+    }
     return null;
   }
 }
 
-// Update notes for a memory and return updated model.
-Future<MemoryModel?> updateDetail(
-  BuildContext context,
-  int id,
-  List<String> notes,
-) async {
-  final response = await Api.updateNote(id, notes);
+Future<MemoryModel?> updateDetail(BuildContext context, WidgetRef ref, int id, List<String> notes,) async {
+  final result = await _callJsonWithCache(
+    endpoint: "memories/$id/notes/detail",
+    call: () => Api.updateNote(id, notes),
+  );
 
-  if (response.statusCode >= 200 && response.statusCode < 300) {
-    final jsonBody = jsonDecode(response.body);
-    return MemoryModel.fromJson(jsonBody['data']);
+  if (result != null && result.statusCode >= 200 && result.statusCode < 300) {
+    final updatedMemory = MemoryModel.fromJson(result.body['data']);
+    ref.read(memoriesProvider.notifier).updateMemory(updatedMemory);
+    return updatedMemory;
   } else {
     return null;
   }
 }
 
-// Upload images for a memory and return updated model.
-Future<MemoryModel?> updateImage(
-  BuildContext context,
-  int id,
-  List<File> images,
-) async {
-  final streamedResponse = await Api.updateImage(id, images);
+Future<MemoryModel?> updateImage(BuildContext context, WidgetRef ref, int id, List<File> images,) async {
+  final result = await _callStreamWithCache(
+    endpoint: "memories/$id/image/upload",
+    call: () => Api.updateImage(id, images),
+  );
 
-  final responseBody = await streamedResponse.stream.bytesToString();
-
-  if (streamedResponse.statusCode >= 200 &&
-      streamedResponse.statusCode < 300) {
-    final jsonBody = jsonDecode(responseBody);
-    return MemoryModel.fromJson(jsonBody['data']);
+  if (result != null && result.statusCode >= 200 && result.statusCode < 300) {
+    final updatedMemory = MemoryModel.fromJson(result.body['data']);
+    ref.read(memoriesProvider.notifier).updateMemory(updatedMemory);
+    return updatedMemory;
   } else {
-    final userData = jsonDecode(responseBody);
-    errorMessage(context, userData['message'] ?? 'Error');
+    if (result != null) {
+      errorMessage(context, _extractMessage(result.body));
+    }
     return null;
   }
 }
 
-// Delete a single image from a memory and return updated model.
-Future<MemoryModel?> deleteImage(
-  BuildContext context,
-  int id,
-  String imageName,
-  List<String> notes,
-) async {
-  final response = await Api.deleteImage(id, imageName, notes);
+Future<MemoryModel?> deleteImage(BuildContext context, WidgetRef ref, int id, String imageName,  List<String> notes,) async {
+  final result = await _callJsonWithCache(
+    endpoint: "memories/$id/image/$imageName/delete",
+    call: () => Api.deleteImage(id, imageName, notes),
+  );
 
-  if (response.statusCode >= 200 && response.statusCode < 300) {
-    final jsonBody = jsonDecode(response.body);
-    return MemoryModel.fromJson(jsonBody['data']);
+  if (result != null && result.statusCode >= 200 && result.statusCode < 300) {
+    final updatedMemory = MemoryModel.fromJson(result.body['data']);
+    ref.read(memoriesProvider.notifier).updateMemory(updatedMemory);
+    return updatedMemory;
   } else {
-    final userData = json.decode(response.body);
-    errorMessage(context, userData['message'] ?? 'Error');
+    if (result != null) {
+      errorMessage(context, _extractMessage(result.body));
+    }
     return null;
+  }
+}
+
+class CacheService {
+  static Future<void> save(String key, dynamic data) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, jsonEncode(data));
+  }
+
+  static Future<dynamic> load(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(key);
+    if (jsonString == null) return null;
+    return jsonDecode(jsonString);
+  }
+
+  static Future<void> clearScope(String scope) async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys =
+        prefs.getKeys().where((k) => k.startsWith("$scope::")).toList();
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
   }
 }

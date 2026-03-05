@@ -4,10 +4,11 @@ import 'package:date_app/global/variables.dart';
 import 'package:date_app/models/memory_model.dart';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_preview/preview_data.dart';
 import 'package:photo_viewer/photo_viewer.dart';
 
-class ImagePreviewPage extends StatefulWidget {
+class ImagePreviewPage extends ConsumerStatefulWidget {
   final List<PreviewData> data;
   final int initialIndex;
   final int memoryId;
@@ -22,10 +23,10 @@ class ImagePreviewPage extends StatefulWidget {
   });
 
   @override
-  State<ImagePreviewPage> createState() => _ImagePreviewPageState();
+  ConsumerState<ImagePreviewPage> createState() => _ImagePreviewPageState();
 }
 
-class _ImagePreviewPageState extends State<ImagePreviewPage> {
+class _ImagePreviewPageState extends ConsumerState<ImagePreviewPage> {
   late int _currentIndex;
   late List<PreviewData> _data;
   late List<String> _notes;
@@ -94,6 +95,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
 
     final updatedMemory = await deleteImage(
       context,
+      ref,
       widget.memoryId,
       imageName,
       _notes,

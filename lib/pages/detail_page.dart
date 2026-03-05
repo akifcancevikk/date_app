@@ -7,28 +7,29 @@ import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/variables.dart';
 import 'package:date_app/helper/url_helper.dart';
 import 'package:date_app/models/memory_model.dart';
+import 'package:date_app/pages/image_preview_page.dart';
 import 'package:date_app/widgets/dialogs/app_fluid_dialog.dart';
 import 'package:date_app/widgets/show_dialogs/show_info.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_preview/preview_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dismissible_page/dismissible_page.dart';
-import 'package:date_app/views/image_preview_page.dart';
 import 'package:pie_menu/pie_menu.dart';
 
 
-class DetailPage extends StatefulWidget {
+class DetailPage extends ConsumerStatefulWidget {
   final MemoryModel memory;
 
   const DetailPage({super.key, required this.memory});
 
   @override
-  State<DetailPage> createState() => _DetailPageState();
+  ConsumerState<DetailPage> createState() => _DetailPageState();
 }
 
-class _DetailPageState extends State<DetailPage> {
+class _DetailPageState extends ConsumerState<DetailPage> {
   bool isUploading = false;
   final TextEditingController noteController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -105,6 +106,7 @@ class _DetailPageState extends State<DetailPage> {
 
       final updatedMemory = await updateImage(
         context,
+        ref,
         widget.memory.id,
         files,
       );
@@ -136,6 +138,7 @@ class _DetailPageState extends State<DetailPage> {
 
     final updatedMemory = await updateNote(
       context,
+      ref,
       widget.memory.id,
       updatedNotes,
     );
@@ -156,6 +159,7 @@ class _DetailPageState extends State<DetailPage> {
   Future<void> _refreshDetail() async {
     final updatedMemory = await updateDetail(
       context,
+      ref,
       widget.memory.id,
       List<String>.from(widget.memory.notes),
     );
@@ -343,6 +347,7 @@ class _DetailPageState extends State<DetailPage> {
 
                               final updatedMemory = await deleteImage(
                                 context,
+                                ref,
                                 widget.memory.id,
                                 imageName,
                                 widget.memory.notes,

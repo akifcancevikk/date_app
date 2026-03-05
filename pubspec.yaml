@@ -33,11 +33,17 @@ dependencies:
   pie_menu: ^3.3.3
   photo_viewer: ^0.1.0
   flutter_appbar: ^1.9.0
+  flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.14.1
+  build_runner: ^2.4.13
+  riverpod_generator: ^3.0.3
+  custom_lint: ^0.8.1
+  riverpod_lint: ^3.0.3
 
   flutter_lints: ^4.0.0
 

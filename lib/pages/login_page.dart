@@ -2,7 +2,7 @@
 import 'package:date_app/api/service.dart';
 import 'package:date_app/core/app_strings.dart';
 import 'package:date_app/global/variables.dart';
-import 'package:date_app/views/register_page.dart';
+import 'package:date_app/pages/register_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
